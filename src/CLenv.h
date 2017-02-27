@@ -1,7 +1,3 @@
-//
-// Created by amath on 9/27/2016.
-//
-
 #ifndef PARTICLESYSTEM_CLENV_H
 #define PARTICLESYSTEM_CLENV_H
 #include "part.h"
@@ -22,7 +18,8 @@ class CLenv {
         cl::Buffer          buf_vel;
         cl::BufferGL        buf_pos;
         cl::BufferGL        buf_col;
-        int                 lenght;
+
+		bool    loadProgram(std::string filename, cl::Device device);
 };
 
 

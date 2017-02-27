@@ -1,7 +1,3 @@
-//
-// Created by amath on 9/27/2016.
-//
-
 #include <fstream>
 #include "CLenv.h"
 
@@ -42,27 +38,13 @@ void CLenv::createBuffer() {
         buf_pos = cl::BufferGL(this->context, CL_MEM_READ_WRITE, pos_id);
         buf_col = cl::BufferGL(this->context, CL_MEM_READ_WRITE, col_id);
 
-
-        //cmds.enqueueNDRangeKernel(kernel,0,cl::NDRange(PARTICLE_NUM));
-    }catch (cl::Error e)
-    {
+    }catch (cl::Error e) {
         std::cout << std::endl << e.what() << " : Error " << e.err() << std::endl;
     }
 }
 
-CLenv::CLenv(std::string file_name)
+CLenv::CLenv(std::string kernelFileName)
 {
-    std::string line;
-    std::string buffer = "";
-    std::ifstream file(file_name);
-    if (file)
-    {
-        while (getline(file,line))
-            buffer += line + "\n";
-        file.close();
-    }
-    lenght = buffer.length();
-
     try {
         std::vector<cl::Platform> all_platforms;
         cl::Platform::get(&all_platforms);
@@ -70,21 +52,10 @@ CLenv::CLenv(std::string file_name)
             std::cout << " No platforms found. Check OpenCL installation!\n";
             exit(1);
         }
-        /*for (unsigned i=0; i<all_platforms.size(); i++)
-            std::cout << ' ' << all_platforms.at(i).getInfo<CL_PLATFORM_NAME>() << " with extension:" <<
-                      all_platforms.at(i).getInfo<CL_PLATFORM_EXTENSIONS>()<<"\n\n";
-        */cl::Platform default_platform = all_platforms[1];
+        cl::Platform default_platform = all_platforms[1];
         std::cout << "Using platform: " << default_platform.getInfo<CL_PLATFORM_NAME>() << "\n";
-
         std::vector<cl::Device> all_devices;
         default_platform.getDevices(CL_DEVICE_TYPE_GPU, &all_devices);
-        /*for (unsigned i=0; i<all_devices.size(); i++)
-            std::cout << ' ' << all_devices.at(i).getInfo<CL_DEVICE_NAME>() << " with extension:" <<
-                      all_devices.at(i).getInfo<CL_DEVICE_EXTENSIONS>()<< "\n\n";
-        */if (all_devices.size() == 0) {
-            std::cout << " No devices found. Check OpenCL installation!\n";
-            exit(1);
-        }
         const cl::Device default_device = all_devices[0];
         #ifdef linux
         cl_context_properties properties[] = {
@@ -106,24 +77,63 @@ CLenv::CLenv(std::string file_name)
 
         context =  cl::Context(default_device, properties);
         cmds = cl::CommandQueue(context, default_device);
-        cl::Program::Sources source(1, std::make_pair(buffer.c_str(), buffer.length() + 1));
-        program = cl::Program(context, source);
-        try {
-            program.build({default_device});
+	    if (loadProgram(kernelFileName, default_device)){
+            kinit = cl::Kernel(program, "clinit");
+            kernel = cl::Kernel(program, "clpart");
         }
-        catch (cl::Error e)
-        {
-            cl_build_status status = program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(default_device);
-            std::string name     = default_device.getInfo<CL_DEVICE_NAME>();
-            std::string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device);
-            std::cerr << "Build log for " << name << ":" << std::endl << buildlog << std::endl;
-        }
-        kinit = cl::Kernel(program, "clinit");
-        kernel = cl::Kernel(program, "clpart");
     }
     catch (cl::Error e)
     {
         std::cout << std::endl << e.what() << " : " << e.err() << std::endl;
+    }
+}
+
+
+bool CLenv::loadProgram(std::string filename, cl::Device device){
+    std::string line;
+    std::ifstream file(filename);
+    std::string buffer = "";
+
+    if (file){
+        while (getline(file, line))
+            buffer += line + "\n";
+        file.close();
+    }
+    cl::Program::Sources source(1, std::make_pair(buffer.c_str(), buffer.length()));
+    program = cl::Program(context, source);
+    try {
+        program.build({device});
+    } catch (cl::Error e){
+        cl_build_status status = program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(device);
+        std::string name = device.getInfo<CL_DEVICE_NAME>();
+        std::string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
+        std::cerr << "Build log for " << name << ":" << std::endl << buildlog << std::endl;
+        return (false);
+    }
+    return (true);
+}
+
+void debugPrintAllDevice(){
+    std::vector<cl::Platform> all_platforms;
+    cl::Platform::get(&all_platforms);
+    if (all_platforms.size() == 0) {
+        std::cout << " No platforms found. Check OpenCL installation!\n";
+        exit(1);
+    }
+    for (unsigned i=0; i<all_platforms.size(); i++)
+        std::cout << ' ' << all_platforms.at(i).getInfo<CL_PLATFORM_NAME>() << " with extension:" <<
+                  all_platforms.at(i).getInfo<CL_PLATFORM_EXTENSIONS>()<<"\n\n";
+    cl::Platform default_platform = all_platforms[1];
+    std::cout << "Using platform: " << default_platform.getInfo<CL_PLATFORM_NAME>() << "\n";
+
+    std::vector<cl::Device> all_devices;
+    default_platform.getDevices(CL_DEVICE_TYPE_GPU, &all_devices);
+    for (unsigned i=0; i<all_devices.size(); i++)
+        std::cout << ' ' << all_devices.at(i).getInfo<CL_DEVICE_NAME>() << " with extension:" <<
+                  all_devices.at(i).getInfo<CL_DEVICE_EXTENSIONS>()<< "\n\n";
+    if (all_devices.size() == 0) {
+        std::cout << " No devices found. Check OpenCL installation!\n";
+        exit(1);
     }
 }
 
