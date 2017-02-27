@@ -26,10 +26,11 @@ set(SOURCE_FILES
         src/main.cpp src/part.h
         src/env.cpp src/env.h
         src/CLenv.cpp src/CLenv.h
-        src/GLenv.cpp src/GLenv.h
+        src/Shader.cpp src/Shader.h
         src/Matrix.cpp src/Matrix.h
         src/Vec3.cpp src/Vec3.h
-        src/Camera.cpp src/Camera.h)
+        src/Camera.cpp src/Camera.h
+        src/InputHandler.cpp src/InputHandler.h)
 add_executable(ParticleSystem ${SOURCE_FILES})
 
 #Link GLFW and OpenCL

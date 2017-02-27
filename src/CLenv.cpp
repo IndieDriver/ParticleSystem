@@ -1,4 +1,3 @@
-#include <fstream>
 #include "CLenv.h"
 
 void CLenv::enqueueKernel(cl::Kernel k, cl_float4 cursorpos){

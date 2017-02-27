@@ -2,9 +2,6 @@
 #define PARTICLESYSTEM_CAMERA_H
 
 #include "part.h"
-#include "Matrix.h"
-
-
 class Camera {
 public:
     Matrix model;

@@ -87,5 +87,4 @@ float	distance(Vec4 pt1, Vec4 pt2);
 Vec4	neg_vec(Vec4 vec);
 
 
-
 #endif //PARTICLESYSTEM_VEC3_H

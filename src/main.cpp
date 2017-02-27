@@ -1,29 +1,13 @@
-#include "env.h"
+#include "part.h"
+#include "Shader.h"
 #include "CLenv.h"
-#include "GLenv.h"
+#include "Env.h"
 #include "Camera.h"
-
-void _update_fps_counter (GLFWwindow* window) {
-    static double previous_seconds = glfwGetTime ();
-    static int frame_count;
-    double current_seconds = glfwGetTime ();
-    double elapsed_seconds = current_seconds - previous_seconds;
-    if (elapsed_seconds > 0.25) {
-        previous_seconds = current_seconds;
-        double fps = (double)frame_count / elapsed_seconds;
-        char tmp[128];
-        sprintf (tmp, "opengl @ fps: %.2f", fps);
-        glfwSetWindowTitle (window, tmp);
-        frame_count = 0;
-    }
-    frame_count++;
-}
 
 static bool     cur = false;
 static cl_float4 cursorpos;
 static float    mposx;
 static float    mposy;
-
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
@@ -75,16 +59,17 @@ void animate(CLenv& cl, Camera &camera, int init){
 
 int main(void)
 {
-    Env env;
+    Env env(WIDTH, HEIGHT);
 
-    env.init_windows();
-    GLenv gl("shaders/part.fs.glsl", "shaders/part.vs.glsl");
+    Shader shader("shaders/part.fs.glsl", "shaders/part.vs.glsl");
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     CLenv cl("shaders/kernel.cl");
     cl.createBuffer();
-    Camera camera(Vec4(-640.0, 360.0, 0.0, 0.0), Vec4(0.0, 0.0, 0.0, 0.0));
+
+    //InputHandler inputHandler;
+	Camera camera(Vec4(-640.0, 360.0, 0.0, 0.0), Vec4(0.0, 0.0, 0.0, 0.0));
     //Camera camera(Vec4(0.0, 0.0, 0.0, 0.0), Vec4(0.0, 0.0, 0.0, 0.0));
 
     GLuint vao = 0;
@@ -112,9 +97,9 @@ int main(void)
             init = 0;
         }else
             animate(cl, camera, 0);
-        camera.mvp_id = glGetUniformLocation(gl.program_id, "MVP");
+        camera.mvp_id = glGetUniformLocation(shader.id, "MVP");
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glUseProgram (gl.program_id);
+        shader.use();
         if (glGetError() != GL_NO_ERROR)
             std::cout << "Error\n";
         glUniformMatrix4fv(camera.mvp_id, 1, GL_FALSE, camera.mvp.mat4);
@@ -122,7 +107,7 @@ int main(void)
         glDrawArrays (GL_POINTS, 0, PARTICLE_NUM);
 
         glfwPollEvents ();
-        _update_fps_counter (env.window);
+        env.updateFpsCounter();
         glfwSwapBuffers (env.window);
         if (glfwGetKey (env.window, GLFW_KEY_SPACE)) {
             cur = true;

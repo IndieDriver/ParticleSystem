@@ -1,9 +1,7 @@
 #ifndef PARTICLESYSTEM_MATRIX_H
 #define PARTICLESYSTEM_MATRIX_H
 
-#include "part.h"
 #include "Vec3.h"
-
 //TODO: namespace
 
 class Matrix {
