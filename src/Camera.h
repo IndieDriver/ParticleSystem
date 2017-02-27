@@ -2,18 +2,33 @@
 #define PARTICLESYSTEM_CAMERA_H
 
 #include "part.h"
+#include "InputHandler.h"
+
 class Camera {
 public:
-    Matrix model;
-    Matrix view;
-    Matrix proj;
-    Matrix mvp;
-    GLint mvp_id;
-    Vec4   pos;
-    Vec4   rot;
-    Camera(Vec4 pos, Vec4 rot);
-    void apply_trans(Vec4 pos, Vec4 rot);
-    void set_mvp();
+	Vec3    pos;
+	Matrix  proj;
+	Matrix  view;
+	int     width;
+	int     height;
+	InputHandler *inputHandler = nullptr;
+
+	Camera(Vec3 pos = Vec3(), Vec3 rot = Vec3(), int width = 0, int height = 0);
+	void queryInput();
+	void update();
+private:
+	Vec3 dir;
+	Vec3 right;
+	//Vec3 target;
+	Vec3 up;
+	bool  mouseMoved = false;
+	float mouseXpos;
+	float mouseYpos;
+	float horAngle;
+	float verAngle;
+	float speed = 3.0f;
+	float deltaTime;
+	float lastTime;
 };
 
 

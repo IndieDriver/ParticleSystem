@@ -68,9 +68,10 @@ int main(void)
     CLenv cl("shaders/kernel.cl");
     cl.createBuffer();
 
-    //InputHandler inputHandler;
-	Camera camera(Vec4(-640.0, 360.0, 0.0, 0.0), Vec4(0.0, 0.0, 0.0, 0.0));
-    //Camera camera(Vec4(0.0, 0.0, 0.0, 0.0), Vec4(0.0, 0.0, 0.0, 0.0));
+    InputHandler inputHandler;
+    Camera camera(Vec3(0.0f, 2.0f, 5.0f), Vec3(0.0f, 0.0f, 0.0f), 1280, 720);
+	camera.inputHandler = &inputHandler;
+    glfwSetWindowUserPointer(env.window, &inputHandler);
 
     GLuint vao = 0;
     glGenVertexArrays (1, &vao);
@@ -89,7 +90,10 @@ int main(void)
     cursorpos.y = 0.0f;
     cursorpos.z = 0.0f;
     cursorpos.w = 0.0f;
-    glfwSetCursorPosCallback(env.window, cursor_position_callback);
+    glfwSetInputMode(env.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(env.window, mouseCallback);
+    glfwSetKeyCallback(env.window, keyCallback);
+	glfwSetCursorPos(env.window, (camera.width / 2.0), (camera.height / 2.0));
     while (!glfwWindowShouldClose(env.window))
     {
         if (init) {
@@ -97,18 +101,22 @@ int main(void)
             init = 0;
         }else
             animate(cl, camera, 0);
-        camera.mvp_id = glGetUniformLocation(shader.id, "MVP");
+
+        GLint mvpID = glGetUniformLocation(shader.id, "MVP");
+        Matrix model = modelMatrix(Vec3(0.0f), Vec3(0.0f), Vec3(0.05f, 0.05f, 0.05f));
+        Matrix MVP = getMVP(model, camera.view, camera.proj);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader.use();
         if (glGetError() != GL_NO_ERROR)
             std::cout << "Error\n";
-        glUniformMatrix4fv(camera.mvp_id, 1, GL_FALSE, camera.mvp.mat4);
+        glUniformMatrix4fv(mvpID, 1, GL_FALSE, MVP.mat4);
         glBindVertexArray (vao);
         glDrawArrays (GL_POINTS, 0, PARTICLE_NUM);
 
-        glfwPollEvents ();
         env.updateFpsCounter();
         glfwSwapBuffers (env.window);
+        glfwPollEvents ();
+	    camera.update();
         if (glfwGetKey (env.window, GLFW_KEY_SPACE)) {
             cur = true;
         }
@@ -116,6 +124,5 @@ int main(void)
             glfwSetWindowShouldClose(env.window, 1);
         }
     }
-
     glfwTerminate();
 }
