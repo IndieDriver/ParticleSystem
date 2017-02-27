@@ -4,19 +4,9 @@
 #include "Env.h"
 #include "Camera.h"
 
-static bool     cur = false;
-static cl_float4 cursorpos;
-static float    mposx;
-static float    mposy;
-
-static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
-{
-        mposx = xpos;
-        mposy = ypos;
-}
-
-void animate(CLenv& cl, Camera &camera, int init){
+void animate(CLenv& cl, Camera &camera, cl_float4 pos, int init){
     try{
+        /*
         if (cur) {
             float x = 2.0f * mposx / 1280 - 1;
             float y = -2.0f * mposy / 720 + 1;
@@ -33,7 +23,7 @@ void animate(CLenv& cl, Camera &camera, int init){
             cursorpos.y = -1.0f;
             cursorpos.z = 0.0f;
             cursorpos.w = 0.0f;
-        }
+        } */
 
         glFlush();
         glFinish();
@@ -43,9 +33,9 @@ void animate(CLenv& cl, Camera &camera, int init){
         cl_vbos.push_back(cl.buf_col);
         status = cl.cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
         if (init == 1)
-            cl.enqueueKernel(cl.kinit, cursorpos);
+            cl.enqueueKernel(cl.kinit, pos);
         else
-            cl.enqueueKernel(cl.kernel, cursorpos);
+            cl.enqueueKernel(cl.kernel, pos);
         status = cl.cmds.finish();
         if (status < 0)
             printf("Error clfinish\n");
@@ -69,9 +59,14 @@ int main(void)
     cl.createBuffer();
 
     InputHandler inputHandler;
-    Camera camera(Vec3(0.0f, 2.0f, 5.0f), Vec3(0.0f, 0.0f, 0.0f), 1280, 720);
+    Camera camera(Vec3(0.0f, 0.0f, 5.0f), Vec3(0.0f, 0.0f, 0.0f), WIDTH, HEIGHT);
 	camera.inputHandler = &inputHandler;
     glfwSetWindowUserPointer(env.window, &inputHandler);
+    glfwSetInputMode(env.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    //glfwSetInputMode(env.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(env.window, mouseCallback);
+    glfwSetKeyCallback(env.window, keyCallback);
+	//glfwSetCursorPos(env.window, (camera.width / 2.0), (camera.height / 2.0));
 
     GLuint vao = 0;
     glGenVertexArrays (1, &vao);
@@ -86,24 +81,25 @@ int main(void)
     glEnableVertexAttribArray (0);
     glEnableVertexAttribArray (1);
     int init = 1;
+
+    bool anim = false;
+	cl_float4 cursorpos;
     cursorpos.x = 0.0f;
     cursorpos.y = 0.0f;
     cursorpos.z = 0.0f;
     cursorpos.w = 0.0f;
-    glfwSetInputMode(env.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetCursorPosCallback(env.window, mouseCallback);
-    glfwSetKeyCallback(env.window, keyCallback);
-	glfwSetCursorPos(env.window, (camera.width / 2.0), (camera.height / 2.0));
+
     while (!glfwWindowShouldClose(env.window))
     {
         if (init) {
-            animate(cl, camera, 1);
+            //TODO: split animate to handle init
+            animate(cl, camera, cursorpos, 1);
             init = 0;
         }else
-            animate(cl, camera, 0);
+            animate(cl, camera, cursorpos, 0);
 
         GLint mvpID = glGetUniformLocation(shader.id, "MVP");
-        Matrix model = modelMatrix(Vec3(0.0f), Vec3(0.0f), Vec3(0.05f, 0.05f, 0.05f));
+        Matrix model = modelMatrix(Vec3(0.0f), Vec3(0.0f), Vec3(1.0f, 1.0f, 1.0f));
         Matrix MVP = getMVP(model, camera.view, camera.proj);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader.use();
@@ -118,7 +114,7 @@ int main(void)
         glfwPollEvents ();
 	    camera.update();
         if (glfwGetKey (env.window, GLFW_KEY_SPACE)) {
-            cur = true;
+            anim = true;
         }
         if (glfwGetKey (env.window, GLFW_KEY_ESCAPE)) {
             glfwSetWindowShouldClose(env.window, 1);

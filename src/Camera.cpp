@@ -35,7 +35,7 @@ void Camera::update(){
     view = viewMatrix(pos,
                       dir + pos,
                       up);
-    proj = projMatrix(45.0f, 1280.0f / 720.0f);
+    proj = projMatrix(45.0f, ((float)WIDTH /(float)HEIGHT));
 }
 
 Matrix getMVP(Matrix model, Matrix view, Matrix proj){
@@ -44,7 +44,7 @@ Matrix getMVP(Matrix model, Matrix view, Matrix proj){
 }
 
 void Camera::queryInput() {
-    if (inputHandler == nullptr)
+	if (inputHandler == nullptr)
         return;
     if (inputHandler->keys[GLFW_KEY_UP] || inputHandler->keys[GLFW_KEY_W]){
         Vec3 tmp = dir * speed * deltaTime;
@@ -64,9 +64,12 @@ void Camera::queryInput() {
         Vec3 tmp = right * speed * deltaTime;
         pos = pos + tmp;
     }
+	if (inputHandler->disabled)
+        return;
     if (inputHandler->mousex != mouseXpos || inputHandler->mousey != mouseYpos) {
         mouseXpos = inputHandler->mousex;
         mouseYpos = inputHandler->mousey;
         mouseMoved = true;
     }
+
 }
