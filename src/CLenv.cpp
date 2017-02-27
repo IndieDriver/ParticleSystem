@@ -86,10 +86,24 @@ CLenv::CLenv(std::string file_name)
             exit(1);
         }
         const cl::Device default_device = all_devices[0];
-        cl_context_properties properties[] = {CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext(),
-                                              CL_WGL_HDC_KHR, (cl_context_properties) wglGetCurrentDC(),
-                                              CL_CONTEXT_PLATFORM, (cl_context_properties) (default_platform)(), 0
-        };
+        #ifdef linux
+        cl_context_properties properties[] = {
+                    CL_GL_CONTEXT_KHR, (cl_context_properties) glXGetCurrentContext(),
+                    CL_GLX_DISPLAY_KHR, (cl_context_properties) glXGetCurrentDisplay(),
+                    CL_CONTEXT_PLATFORM, (cl_context_properties) (default_platform)(), 0};
+        #elif defined _WIN32
+        cl_context_properties properties[] = {
+                CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext(),
+                CL_WGL_HDC_KHR, (cl_context_properties) wglGetCurrentDC(),
+                CL_CONTEXT_PLATFORM, (cl_context_properties) (default_platform)(), 0};
+        #elif defined TARGET_OS_MAC
+        CGLContextObj glContext = CGLGetCurrentContext();
+        CGLShareGroupObj shareGroup = CGLGetShareGroup(glContext);
+        cl_context_properties properties[] = {
+                CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,
+                (cl_context_properties)shareGroup, 0};
+        #endif
+
         context =  cl::Context(default_device, properties);
         cmds = cl::CommandQueue(context, default_device);
         cl::Program::Sources source(1, std::make_pair(buffer.c_str(), buffer.length() + 1));

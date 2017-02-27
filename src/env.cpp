@@ -1,7 +1,3 @@
-//
-// Created by amath on 9/27/2016.
-//
-
 #include "env.h"
 
 void Env::init_windows() {
