@@ -11,11 +11,14 @@
 class Scene {
 public:
 	Env             *env;
-	CLenv           *cLenv;
+	CLenv           *cl;
 	Camera          *camera;
 	GLuint          vao;
 	Scene(CLenv *env, Camera *camera);
 	void            draw(const Shader &shader);
+	void            initScene();
+	void            animate(cl_float4 cursorPos);
+	cl_float4       getCursorPosInWorldSpace();
 };
 
 

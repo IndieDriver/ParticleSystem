@@ -7,6 +7,9 @@
 class Camera {
 public:
 	Vec3    pos;
+	Vec3    dir;
+	Vec3    right;
+	Vec3    up;
 	Matrix  proj;
 	Matrix  view;
 	int     width;
@@ -17,10 +20,7 @@ public:
 	void queryInput();
 	void update();
 private:
-	Vec3 dir;
-	Vec3 right;
 	//Vec3 target;
-	Vec3 up;
 	bool  mouseMoved = false;
 	float mouseXpos;
 	float mouseYpos;

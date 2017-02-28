@@ -19,6 +19,7 @@ __kernel void clinit(float4 cursor, __global float4 *lpos, __global float4 *lcol
     pos.x = (float)(r * cos(theta) * sin(phi));
     pos.y = (float)(r * sin(theta) * sin(phi));
     pos.z = (float)(r * cos(phi));
+    pos.z = 0.0f;
     pos.w = 0.0f;
     col.x = 1.0f;
     col.y = 0.0f;
@@ -42,16 +43,19 @@ __kernel void clpart(float4 cursor, __global float4 *lpos, __global float4 *lcol
 
     if (cursor.x != -1.0f && cursor.y != -1.0f)
     {
-        float m = 1.0f;
-        float dt = 0.8f;
+        float m = 10.0f;
+        float dt = 0.01f;
         pos.w = 0.0f;
-        //cursor.z = 0.0f;
         float4 force = cursor - pos;
         float dist = sqrt(force.x * force.x + force.y * force.y);
-        float G = 0.00000000006667;
-        float acc = G*(1.0f*m)/(dist*dist*dist);
+        float G = 6.67300E-11;
+        float acc = G*(1.0f*m) / dist;
         float4 a = acc * force;
 
+
+        col.x = cursor.x;
+        col.y = cursor.y;
+        col.z = 1.0f;
 
         a = normalize(a);
         vel += a * dt;
