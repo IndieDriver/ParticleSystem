@@ -56,7 +56,7 @@ __kernel void clpart(float4 cursor, __global float4 *lpos, __global float4 *lcol
         a = normalize(a);
         vel += a * dt;
         pos += vel * dt;
-        vel = (vel + acc * force) * dt;
+        //vel = (vel + acc * force) * dt;
         //pos = pos + (vel * dt);
         //pos = pos + (vel * dt);
 

@@ -7,7 +7,7 @@ class Shader {
 public:
 	GLuint id = 0;
 	Shader(std::string fragFilename, std::string vertexFilename);
-	void use(){
+	void use() const{
 		glUseProgram(id);
 	}
 

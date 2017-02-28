@@ -3,28 +3,28 @@
 #include "CLenv.h"
 #include "Env.h"
 #include "Camera.h"
+#include "Scene.h"
 
-void animate(CLenv& cl, Camera &camera, cl_float4 pos, int init){
+void animate(bool init, CLenv& cl, Camera &camera, cl_float4 pos){
     try{
-        /*
-        if (cur) {
-            float x = 2.0f * mposx / 1280 - 1;
-            float y = -2.0f * mposy / 720 + 1;
+
+        //if (cur) {
+            float x = 2.0f * camera.inputHandler->mousex / WIDTH - 1;
+            float y = -2.0f * camera.inputHandler->mousey / HEIGHT + 1;
             Matrix viewProjectionInverse = get_inverse(mat4_mul(camera.view, camera.proj));
             Vec4 point3D = Vec4(x, y, 0, 0);
             Vec4 cursor = viewProjectionInverse.mul_matrix4_vec4(point3D);
-            cursorpos.x = cursor.x;
-            cursorpos.y = cursor.y;
-            cursorpos.z = 0.0f;
-            cursorpos.w = 0.0f;
-        } else
-        {
-            cursorpos.x = -1.0f;
-            cursorpos.y = -1.0f;
-            cursorpos.z = 0.0f;
-            cursorpos.w = 0.0f;
-        } */
+            pos.x = cursor.x;
+            pos.y = cursor.y;
+            pos.z = 0.0f;
+            pos.w = 0.0f;
 
+            //pos.x = -1.0f;
+            //pos.y = -1.0f;
+            pos.z = 0.0f;
+            pos.w = 0.0f;
+
+        //printf("%f %f %f %d\n", pos.x, pos.y, pos.z, init);
         glFlush();
         glFinish();
         int status = 0;
@@ -32,7 +32,7 @@ void animate(CLenv& cl, Camera &camera, cl_float4 pos, int init){
         cl_vbos.push_back(cl.buf_pos);
         cl_vbos.push_back(cl.buf_col);
         status = cl.cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
-        if (init == 1)
+        if (init)
             cl.enqueueKernel(cl.kinit, pos);
         else
             cl.enqueueKernel(cl.kernel, pos);
@@ -68,19 +68,7 @@ int main(void)
     glfwSetKeyCallback(env.window, keyCallback);
 	//glfwSetCursorPos(env.window, (camera.width / 2.0), (camera.height / 2.0));
 
-    GLuint vao = 0;
-    glGenVertexArrays (1, &vao);
-    glBindVertexArray (vao);
-
-    glBindBuffer(GL_ARRAY_BUFFER, cl.pos_id);
-    glVertexAttribPointer (0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
-
-    glBindBuffer(GL_ARRAY_BUFFER, cl.col_id);
-    glVertexAttribPointer (1, 4, GL_FLOAT, GL_FALSE, 0, NULL);
-
-    glEnableVertexAttribArray (0);
-    glEnableVertexAttribArray (1);
-    int init = 1;
+    Scene scene(&cl, &camera);
 
     bool anim = false;
 	cl_float4 cursorpos;
@@ -91,27 +79,18 @@ int main(void)
 
     while (!glfwWindowShouldClose(env.window))
     {
-        if (init) {
+        if (!anim) {
             //TODO: split animate to handle init
-            animate(cl, camera, cursorpos, 1);
-            init = 0;
+            animate(anim, cl, camera, cursorpos);
+            anim = true;
         }else
-            animate(cl, camera, cursorpos, 0);
+            animate(anim, cl, camera, cursorpos);
 
-        GLint mvpID = glGetUniformLocation(shader.id, "MVP");
-        Matrix model = modelMatrix(Vec3(0.0f), Vec3(0.0f), Vec3(1.0f, 1.0f, 1.0f));
-        Matrix MVP = getMVP(model, camera.view, camera.proj);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        shader.use();
-        if (glGetError() != GL_NO_ERROR)
-            std::cout << "Error\n";
-        glUniformMatrix4fv(mvpID, 1, GL_FALSE, MVP.mat4);
-        glBindVertexArray (vao);
-        glDrawArrays (GL_POINTS, 0, PARTICLE_NUM);
+        scene.draw(shader);
 
         env.updateFpsCounter();
-        glfwSwapBuffers (env.window);
-        glfwPollEvents ();
+        glfwSwapBuffers(env.window);
+        glfwPollEvents();
 	    camera.update();
         if (glfwGetKey (env.window, GLFW_KEY_SPACE)) {
             anim = true;
