@@ -6,7 +6,8 @@
 class InputHandler {
 public:
 	bool    keys[1024] = {0};
-	bool    disabled = true;
+	bool    mouseDisabled = true;
+	bool    keybrDisabled = true;
 	float   mousex = (float)(WIDTH / 2);
 	float   mousey = (float)(HEIGHT / 2);
 };

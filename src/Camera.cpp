@@ -46,6 +46,8 @@ Matrix getMVP(Matrix model, Matrix view, Matrix proj){
 void Camera::queryInput() {
 	if (inputHandler == nullptr)
         return;
+	if (inputHandler->keybrDisabled)
+        return;
     if (inputHandler->keys[GLFW_KEY_UP] || inputHandler->keys[GLFW_KEY_W]){
         Vec3 tmp = dir * speed * deltaTime;
         pos = pos + tmp;
@@ -64,12 +66,12 @@ void Camera::queryInput() {
         Vec3 tmp = right * speed * deltaTime;
         pos = pos + tmp;
     }
-	if (inputHandler->disabled)
+	if (inputHandler->mouseDisabled)
         return;
-    if (inputHandler->mousex != mouseXpos || inputHandler->mousey != mouseYpos) {
-        mouseXpos = inputHandler->mousex;
-        mouseYpos = inputHandler->mousey;
-        mouseMoved = true;
-    }
+	if (inputHandler->mousex != mouseXpos || inputHandler->mousey != mouseYpos) {
+		mouseXpos = inputHandler->mousex;
+		mouseYpos = inputHandler->mousey;
+		mouseMoved = true;
+	}
 
 }

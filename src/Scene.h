@@ -14,10 +14,12 @@ public:
 	CLenv           *cl;
 	Camera          *camera;
 	GLuint          vao;
+	bool            isFreeCam = false;
 	Scene(CLenv *env, Camera *camera);
 	void            draw(const Shader &shader);
 	void            initScene();
 	void            animate(cl_float4 cursorPos);
+	void            queryInput();
 	cl_float4       getCursorPosInWorldSpace();
 };
 

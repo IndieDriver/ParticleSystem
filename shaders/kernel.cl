@@ -64,7 +64,7 @@ __kernel void clpart(float4 cursor, __global float4 *lpos, __global float4 *lcol
         //pos = pos + (vel * dt);
         //pos = pos + (vel * dt);
 
-        lpos[global_id] = pos;
+        //lpos[global_id] = pos;
         lcol[global_id] = col;
         lvel[global_id] = vel;
     }
