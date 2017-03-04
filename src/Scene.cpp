@@ -75,8 +75,8 @@ void Scene::animate(cl_float4 cursorPos){
 		cursorPos.z = 0.0f;
 		//cursorPos.z = cursor.z;
 		//cursorPos.w = cursor.w;
-		//cursorPos = getCursorPosInWorldSpace();
-		cursorPos.z =0.0f;
+		cursorPos = getCursorPosInWorldSpace();
+		//cursorPos.z =0.0f;
 
 		//printf("%f %f %f %d\n", pos.x, pos.y, pos.z, init);
 		glFlush();
@@ -127,6 +127,8 @@ cl_float4 Scene::getCursorPosInWorldSpace() {
 	result.x = camera->pos.x + dir.x * t;
 	result.y = camera->pos.y + dir.y * t;
 	result.z = camera->pos.z + dir.z * t;
+
+	//printf("%f %f %f\n", result.x, result.y, result.z);
 	return (result);
 }
 
@@ -135,6 +137,6 @@ void Scene::queryInput() {
 		return;
 	if (camera->inputHandler->keys[GLFW_KEY_F]) {
 		camera->inputHandler->keybrDisabled = !camera->inputHandler->keybrDisabled;
-		camera->inputHandler->mouseDisabled = !camera->inputHandler->mouseDisabled;
+		//camera->inputHandler->mouseDisabled = !camera->inputHandler->mouseDisabled;
 	}
 }

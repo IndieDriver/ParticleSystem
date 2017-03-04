@@ -43,8 +43,8 @@ __kernel void clpart(float4 cursor, __global float4 *lpos, __global float4 *lcol
 
     if (cursor.x != -1.0f && cursor.y != -1.0f)
     {
-        float m = 10.0f;
-        float dt = 0.01f;
+        float m = 1.0f;
+        float dt = 0.1f;
         pos.w = 0.0f;
         float4 force = cursor - pos;
         float dist = sqrt(force.x * force.x + force.y * force.y);
@@ -64,7 +64,7 @@ __kernel void clpart(float4 cursor, __global float4 *lpos, __global float4 *lcol
         //pos = pos + (vel * dt);
         //pos = pos + (vel * dt);
 
-        //lpos[global_id] = pos;
+        lpos[global_id] = pos;
         lcol[global_id] = col;
         lvel[global_id] = vel;
     }
