@@ -38,7 +38,6 @@ int main(void)
     while (!glfwWindowShouldClose(env.window))
     {
 	    scene.queryInput();
-	    scene.getCursorPosInWorldSpace();
         scene.draw(shader);
         scene.animate(cursorpos);
         env.updateFpsCounter();

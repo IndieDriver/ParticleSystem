@@ -47,9 +47,9 @@ __kernel void clpart(float4 cursor, __global float4 *lpos, __global float4 *lcol
         float dt = 0.1f;
         pos.w = 0.0f;
         float4 force = cursor - pos;
-        float dist = sqrt(force.x * force.x + force.y * force.y);
+        float dist = sqrt(force.x * force.x + force.y * force.y + force.z * force.z);
         float G = 6.67300E-11;
-        float acc = G*(1.0f*m) / dist;
+        float acc = G*(0.1f*m) / dist;
         float4 a = acc * force;
 
 

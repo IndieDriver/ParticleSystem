@@ -1,6 +1,5 @@
 #include "Scene.h"
 
-
 Scene::Scene(CLenv *clenv, Camera *cam) {
 	cl = clenv;
 	camera = cam;
@@ -35,10 +34,10 @@ void Scene::initScene(){
 	//TODO: init in cube
 	try{
 		cl_float4 pos;
-		pos.x = 0.0f;
-		pos.y = 0.0f;
-		pos.z = 0.0f;
-		pos.w = 0.0f;
+		pos.x = -1.0f;
+		pos.y = -1.0f;
+		pos.z = -1.0f;
+		pos.w = -1.0f;
 
 		glFlush();
 		glFinish();
@@ -61,24 +60,15 @@ void Scene::initScene(){
 }
 
 void Scene::animate(cl_float4 cursorPos){
-	try{
-		//if (cur) {
-		float x = 2.0f * camera->inputHandler->mousex / WIDTH - 1;
-		float y = -2.0f * camera->inputHandler->mousey / HEIGHT + 1;
-		Matrix viewProjectionInverse = get_inverse(mat4_mul(camera->view, camera->proj));
-		Vec4 point3D = Vec4(x, y, 0, 0);
-		Vec4 cursor = viewProjectionInverse.mul_matrix4_vec4(point3D);
-
-
-		cursorPos.x = cursor.x;
-		cursorPos.y = cursor.y;
-		cursorPos.z = 0.0f;
-		//cursorPos.z = cursor.z;
-		//cursorPos.w = cursor.w;
+	if (gravity)
 		cursorPos = getCursorPosInWorldSpace();
-		//cursorPos.z =0.0f;
-
-		//printf("%f %f %f %d\n", pos.x, pos.y, pos.z, init);
+	else {
+		cursorPos.x = -1.0f;
+		cursorPos.y = -1.0f;
+		cursorPos.z = -1.0f;
+		cursorPos.w = -1.0f;
+	}
+	try{
 		glFlush();
 		glFinish();
 		int status = 0;
@@ -91,50 +81,52 @@ void Scene::animate(cl_float4 cursorPos){
 		if (status < 0)
 			printf("Error clfinish\n");
 		cl->cmds.enqueueReleaseGLObjects(&cl_vbos, NULL, NULL);
-	}
-	catch (cl::Error e)
-	{
+	} catch (cl::Error e) {
 		std::cout << std::endl << e.what() << " : Error " << e.err() << std::endl;
 	}
 }
 
 cl_float4 Scene::getCursorPosInWorldSpace() {
-	cl_float4 result;
-	float screenSpaceX = (camera->inputHandler->mousex / ((float)WIDTH / 2.0f) - 1.0f) * (float)WIDTH / (float)HEIGHT;
-	float screenSpaceY = 1.0f - camera->inputHandler->mousey / ((float)HEIGHT / 2.0f);
+	float   x = (2.0f * camera->inputHandler->mousex) / WIDTH - 1.0f;
+	float   y = 1.0f - (2.0f * camera->inputHandler->mousey) / HEIGHT;
+	Vec4    rayClip(x, y, -1.0f, 1.0f);
 
-	Vec3 dx = camera->right * screenSpaceX;
-	Vec3 dy = camera->up * screenSpaceY;
+	Matrix  invProj = get_inverse(camera->proj);
+	Vec4    rayEye = invProj.mul_matrix4_vec4(rayClip);
+	rayEye = Vec4(rayEye.x, rayEye.y, -1.0f, 0.0f);
 
-	Vec3 dir = camera->dir + (dx + dy) * 2.0f;
-	dir.normalize();
+	Matrix  invView = get_inverse(camera->view);
+	Vec4    rayWorld4 = invView.mul_matrix4_vec4(rayEye);
+	Vec3    rayWorld(rayWorld4.x, rayWorld4.y, rayWorld4.z);
+	rayWorld.normalize();
 
-	Vec3 planNormal = neg_vec(camera->dir);
+	Vec3 planNormal = camera->dir;
 	planNormal.normalize();
 	Vec3 planPos = Vec3(0.0f, 0.0f, 0.0f);
 
 	float t;
-
-
 	t = -(((planNormal.x * (camera->pos.x - planPos.x)) +
 	       (planNormal.y * (camera->pos.y - planPos.y)) +
 	       (planNormal.z * (camera->pos.z - planPos.z)))
-	      / ((planNormal.x * dir.x) + (planNormal.y * dir.y)
-	         + (planNormal.z * dir.z)));
+	      / ((planNormal.x * rayWorld.x) + (planNormal.y * rayWorld.y)
+	         + (planNormal.z * rayWorld.z)));
 	if (t < 0.0)
 		printf("Sould not happened\n");
 
-	result.x = camera->pos.x + dir.x * t;
-	result.y = camera->pos.y + dir.y * t;
-	result.z = camera->pos.z + dir.z * t;
+	cl_float4 result;
+	result.x = camera->pos.x + rayWorld.x * t;
+	result.y = camera->pos.y + rayWorld.y * t;
+	result.z = camera->pos.z + rayWorld.z * t;
 
-	//printf("%f %f %f\n", result.x, result.y, result.z);
 	return (result);
 }
 
 void Scene::queryInput() {
 	if (camera->inputHandler == nullptr)
 		return;
+	if (camera->inputHandler->keys[GLFW_KEY_SPACE]){
+		gravity = true;
+	}
 	if (camera->inputHandler->keys[GLFW_KEY_F]) {
 		camera->inputHandler->keybrDisabled = !camera->inputHandler->keybrDisabled;
 		//camera->inputHandler->mouseDisabled = !camera->inputHandler->mouseDisabled;

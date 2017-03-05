@@ -15,6 +15,7 @@ public:
 	Camera          *camera;
 	GLuint          vao;
 	bool            isFreeCam = false;
+	bool            gravity = false;
 	Scene(CLenv *env, Camera *camera);
 	void            draw(const Shader &shader);
 	void            initScene();
