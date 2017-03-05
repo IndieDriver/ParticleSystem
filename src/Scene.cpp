@@ -33,11 +33,11 @@ void Scene::draw(const Shader &shader) {
 void Scene::initScene(){
 	//TODO: init in cube
 	try{
-		cl_float4 pos;
-		pos.x = -1.0f;
-		pos.y = -1.0f;
-		pos.z = -1.0f;
-		pos.w = -1.0f;
+		cl_float4 cursorPos;
+		cursorPos.x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		cursorPos.y = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		cursorPos.z = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		cursorPos.w = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
 		glFlush();
 		glFinish();
@@ -46,7 +46,7 @@ void Scene::initScene(){
 		cl_vbos.push_back(cl->buf_pos);
 		cl_vbos.push_back(cl->buf_col);
 		cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
-		cl->enqueueKernel(cl->kinit, pos);
+		cl->enqueueKernel(cl->kinit, cursorPos);
 		status = cl->cmds.finish();
 		if (status < 0)
 			printf("Error clfinish\n");
@@ -130,5 +130,6 @@ void Scene::queryInput() {
 	if (camera->inputHandler->keys[GLFW_KEY_F]) {
 		camera->inputHandler->keybrDisabled = !camera->inputHandler->keybrDisabled;
 		//camera->inputHandler->mouseDisabled = !camera->inputHandler->mouseDisabled;
+		//gravity = false;
 	}
 }

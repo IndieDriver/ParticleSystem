@@ -17,7 +17,7 @@ int main(void)
     cl.createBuffer();
 
     InputHandler inputHandler;
-    Camera camera(Vec3(0.0f, 0.0f, 5.0f), Vec3(0.0f, 0.0f, 0.0f), WIDTH, HEIGHT);
+    Camera camera(Vec3(0.0f, 0.0f, 10.0f), Vec3(0.0f, 0.0f, 0.0f), WIDTH, HEIGHT);
 	camera.inputHandler = &inputHandler;
     glfwSetWindowUserPointer(env.window, &inputHandler);
     glfwSetInputMode(env.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
