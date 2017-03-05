@@ -7,6 +7,16 @@ Vec2::Vec2(float x, float y) {
     this->y = y;
 }
 
+Vec2::Vec2(const Vec3 &vec3) {
+    this->x = vec3.x;
+    this->y = vec3.y;
+}
+
+Vec2::Vec2(const Vec4 &vec4) {
+    this->x = vec4.x;
+    this->y = vec4.y;
+}
+
 float	Vec2::length()
 {
     return (sqrtf(x * x + y * y));
@@ -24,40 +34,40 @@ void Vec2::print()
     printf("%f %f\n", x, y);
 }
 
-Vec2    Vec2::operator+(const Vec2 &v2){
-    return (Vec2(x + v2.x, y + v2.y));
+Vec2    Vec2::operator+(const Vec2 &rhs){
+    return (Vec2(x + rhs.x, y + rhs.y));
 }
 
-Vec2    Vec2::operator-(const Vec2 &v2){
-    return (Vec2(x - v2.x, y - v2.y));
+Vec2    Vec2::operator-(const Vec2 &rhs){
+    return (Vec2(x - rhs.x, y - rhs.y));
 }
 
-Vec2    Vec2::operator*(const Vec2 &v2){
-    return (Vec2(x * v2.x, y * v2.y));
+Vec2    Vec2::operator*(const Vec2 &rhs){
+    return (Vec2(x * rhs.x, y * rhs.y));
 }
 
-Vec2    Vec2::operator/(const Vec2 &v2){
-    return (Vec2(x / v2.x, y / v2.y));
+Vec2    Vec2::operator/(const Vec2 &rhs){
+    return (Vec2(x / rhs.x, y / rhs.y));
 }
 
-bool    Vec2::operator==(const Vec2& other) const{
-	return (x == other.x && y == other.y);
+bool    Vec2::operator==(const Vec2& rhs) const{
+	return (x == rhs.x && y == rhs.y);
 }
 
-Vec2   Vec2::operator+(const float &f){
-    return (Vec2(x + f, y + f));
+Vec2   Vec2::operator+(const float &rhs){
+    return (Vec2(x + rhs, y + rhs));
 }
 
-Vec2   Vec2::operator-(const float &f){
-    return (Vec2(x - f, y - f));
+Vec2   Vec2::operator-(const float &rhs){
+    return (Vec2(x - rhs, y - rhs));
 }
 
-Vec2   Vec2::operator*(const float &f){
-    return (Vec2(x * f, y * f));
+Vec2   Vec2::operator*(const float &rhs){
+    return (Vec2(x * rhs, y * rhs));
 }
 
-Vec2   Vec2::operator/(const float &f) {
-    return (Vec2(x / f, y / f));
+Vec2   Vec2::operator/(const float &rhs) {
+    return (Vec2(x / rhs, y / rhs));
 }
 
 ///////////////Vec3//////////////
@@ -68,13 +78,25 @@ Vec3::Vec3(float x1, float y1, float z1) {
     z = z1;
 }
 
-Vec3	Vec3::cross(Vec3 v2)
+Vec3::Vec3(const Vec2 &vec2, float z1){
+    x = vec2.x;
+    y = vec2.y;
+    z = z1;
+}
+
+Vec3::Vec3(const Vec4 &vec4){
+    x = vec4.x;
+    y = vec4.y;
+    z = vec4.z;
+}
+
+Vec3	Vec3::cross(Vec3 rhs)
 {
     Vec3 result;
 
-    result.x = y * v2.z - z * v2.y;
-    result.y = z * v2.x - x * v2.z;
-    result.z = x * v2.y - y * v2.x;
+    result.x = y * rhs.z - z * rhs.y;
+    result.y = z * rhs.x - x * rhs.z;
+    result.z = x * rhs.y - y * rhs.x;
     return (result);
 }
 
@@ -87,13 +109,13 @@ Vec3	Vec3::scale(float fact)
     return (res);
 }
 
-float    Vec3::dot(Vec3 v2){
-    return (x * v2.x + y * v2.y + z * v2.z);
+float    Vec3::dot(Vec3 rhs){
+    return (x * rhs.x + y * rhs.y + z * rhs.z);
 }
 
-float	dot(Vec3 v1, Vec3 v2)
+float	dot(Vec3 v1, Vec3 rhs)
 {
-    return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z);
+    return (v1.x * rhs.x + v1.y * rhs.y + v1.z * rhs.z);
 }
 
 float	distance(Vec3 pt1, Vec3 pt2)
@@ -128,53 +150,53 @@ void Vec3::print()
     printf("%f %f %f\n", x, y, z);
 }
 
-Vec3    Vec3::operator+(const Vec3 &v2){
-    return (Vec3(x + v2.x, y + v2.y, z + v2.z));
+Vec3    Vec3::operator+(const Vec3 &rhs){
+    return (Vec3(x + rhs.x, y + rhs.y, z + rhs.z));
 }
 
-Vec3    Vec3::operator-(const Vec3 &v2){
-    return (Vec3(x - v2.x, y - v2.y, z - v2.z));
+Vec3    Vec3::operator-(const Vec3 &rhs){
+    return (Vec3(x - rhs.x, y - rhs.y, z - rhs.z));
 }
 
-Vec3    Vec3::operator*(const Vec3 &v2){
-    return (Vec3(x * v2.x, y * v2.y, z * v2.z));
+Vec3    Vec3::operator*(const Vec3 &rhs){
+    return (Vec3(x * rhs.x, y * rhs.y, z * rhs.z));
 }
 
-Vec3    Vec3::operator/(const Vec3 &v2){
-    return (Vec3(x / v2.x, y / v2.y, z / v2.z));
+Vec3    Vec3::operator/(const Vec3 &rhs){
+    return (Vec3(x / rhs.x, y / rhs.y, z / rhs.z));
 }
 
-bool    Vec3::operator==(const Vec3 &v2) const{
-	return (x == v2.x && y == v2.y && z == v2.z);
+bool    Vec3::operator==(const Vec3 &rhs) const{
+	return (x == rhs.x && y == rhs.y && z == rhs.z);
 }
 
-Vec3   Vec3::operator+(const float &f){
-    return (Vec3(x + f, y + f, z + f));
+Vec3   Vec3::operator+(const float &rhs){
+    return (Vec3(x + rhs, y + rhs, z + rhs));
 }
 
-Vec3   Vec3::operator-(const float &f){
-    return (Vec3(x - f, y - f, z - f));
+Vec3   Vec3::operator-(const float &rhs){
+    return (Vec3(x - rhs, y - rhs, z - rhs));
 }
 
-Vec3   Vec3::operator*(const float &f){
-    return (Vec3(x * f, y * f, z * f));
+Vec3   Vec3::operator*(const float &rhs){
+    return (Vec3(x * rhs, y * rhs, z * rhs));
 }
 
-Vec3   Vec3::operator/(const float &f){
-    return (Vec3(x / f, y / f, z / f));
+Vec3   Vec3::operator/(const float &rhs){
+    return (Vec3(x / rhs, y / rhs, z / rhs));
 }
 
-Vec3&   Vec3::operator+=(const Vec3& v2){
-    this->x += v2.x;
-    this->y += v2.y;
-    this->z += v2.z;
+Vec3&   Vec3::operator+=(const Vec3& rhs){
+    this->x += rhs.x;
+    this->y += rhs.y;
+    this->z += rhs.z;
     return *this;
 }
 
-Vec3&   Vec3::operator-=(const Vec3& v2){
-    this->x -= v2.x;
-    this->y -= v2.y;
-    this->z -= v2.z;
+Vec3&   Vec3::operator-=(const Vec3& rhs){
+    this->x -= rhs.x;
+    this->y -= rhs.y;
+    this->z -= rhs.z;
     return *this;
 }
 
@@ -187,18 +209,32 @@ Vec4::Vec4(float x1, float y1, float z1, float w1) {
     w = w1;
 }
 
-float   Vec4::dot(Vec4 v2)
-{
-    return (x * v2.x + y * v2.y + z * v2.z);
+Vec4::Vec4(const Vec2 &vec2, float z1, float w1) {
+    x = vec2.x;
+    y = vec2.y;
+    z = z1;
+    w = w1;
 }
 
-Vec4    Vec4::cross(Vec4 v2)
+Vec4::Vec4(const Vec3 &vec3, float w1) {
+    x = vec3.x;
+    y = vec3.y;
+    z = vec3.z;
+    w = w1;
+}
+
+float   Vec4::dot(Vec4 rhs)
+{
+    return (x * rhs.x + y * rhs.y + z * rhs.z);
+}
+
+Vec4    Vec4::cross(Vec4 rhs)
 {
     Vec4 result;
 
-    result.x = y * v2.z - z * v2.y;
-    result.y = z * v2.x - x * v2.z;
-    result.z = x * v2.y - y * v2.x;
+    result.x = y * rhs.z - z * rhs.y;
+    result.y = z * rhs.x - x * rhs.z;
+    result.z = x * rhs.y - y * rhs.x;
     return (result);
 }
 
@@ -256,34 +292,36 @@ void Vec4::print()
     printf("%f %f %f %f\n", x, y, z, w);
 }
 
-Vec4 Vec4::operator+(const Vec4 &v2){
-    return (Vec4(x + v2.x, y + v2.y, z + v2.z, w + v2.w));
+Vec4 Vec4::operator+(const Vec4 &rhs){
+    return (Vec4(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w));
 }
 
-Vec4 Vec4::operator-(const Vec4 &v2){
-    return (Vec4(x - v2.x, y - v2.y, z - v2.z, w - v2.w));
+Vec4 Vec4::operator-(const Vec4 &rhs){
+    return (Vec4(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w));
 }
 
-Vec4 Vec4::operator*(const Vec4 &v2){
-    return (Vec4(x * v2.x, y * v2.y, z * v2.z, w * v2.w));
+Vec4 Vec4::operator*(const Vec4 &rhs){
+    return (Vec4(x * rhs.x, y * rhs.y, z * rhs.z, w * rhs.w));
 }
 
-Vec4 Vec4::operator/(const Vec4 &v2){
-    return (Vec4(x / v2.x, y / v2.y, z / v2.z, w / v2.w));
+Vec4 Vec4::operator/(const Vec4 &rhs){
+    return (Vec4(x / rhs.x, y / rhs.y, z / rhs.z, w / rhs.w));
 }
 
-Vec4 Vec4::operator+(float &f) {
-    return (Vec4(x + f, y + f, z + f, w + f));
+Vec4 Vec4::operator+(float &rhs) {
+    return (Vec4(x + rhs, y + rhs, z + rhs, w + rhs));
 }
 
-Vec4 Vec4::operator-(float &f) {
-    return (Vec4(x - f, y - f, z - f, w - f));
+Vec4 Vec4::operator-(float &rhs) {
+    return (Vec4(x - rhs, y - rhs, z - rhs, w - rhs));
 }
 
-Vec4 Vec4::operator*(float &f) {
-    return (Vec4(x * f, y * f, z * f, w * f));
+Vec4 Vec4::operator*(float &rhs) {
+    return (Vec4(x * rhs, y * rhs, z * rhs, w * rhs));
 }
 
-Vec4 Vec4::operator/(float &f) {
-    return (Vec4(x / f, y / f, z / f, w / f));
+Vec4 Vec4::operator/(float &rhs) {
+    return (Vec4(x / rhs, y / rhs, z / rhs, w / rhs));
 }
+
+

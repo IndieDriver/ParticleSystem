@@ -39,8 +39,7 @@ void Camera::update(){
 }
 
 Matrix getMVP(Matrix model, Matrix view, Matrix proj){
-    Matrix mvp = mat4_mul(mat4_mul(model, view), proj);
-    return (mvp);
+    return (model * view * proj);
 }
 
 void Camera::queryInput() {

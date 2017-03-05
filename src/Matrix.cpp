@@ -40,21 +40,6 @@ void Matrix::get_identity()
     mat4[15] = 1.0f;
 }
 
-Vec4	Matrix::mul_matrix4_vec4(const Vec4& vec4)
-{
-    Vec4 out(0.0f);
-
-    out.x = (mat4[0] * vec4.x) + (mat4[1] * vec4.y)
-            + (mat4[2] * vec4.z) + (mat4[3] * vec4.w);
-    out.y = (mat4[4] * vec4.x) + (mat4[5] * vec4.y)
-            + (mat4[6] * vec4.z) + (mat4[7] * vec4.w);
-    out.z = (mat4[8] * vec4.x) + (mat4[9] * vec4.y)
-            + (mat4[10] * vec4.z) + (mat4[11] * vec4.w);
-    out.w = (mat4[12] * vec4.x) + (mat4[13] * vec4.y)
-            + (mat4[14] * vec4.z) + (mat4[15] * vec4.w);
-    return (out);
-}
-
 void	Matrix::transpose() {
     float tmp;
     int i;
@@ -73,7 +58,21 @@ void	Matrix::transpose() {
     }
 }
 
-Matrix	mat4_mul(Matrix m1, Matrix m2)
+Vec4 Matrix::operator*(const Vec4 &rhs) {
+	Vec4 result;
+
+    result.x = (mat4[0] * rhs.x) + (mat4[1] * rhs.y)
+            + (mat4[2] * rhs.z) + (mat4[3] * rhs.w);
+    result.y = (mat4[4] * rhs.x) + (mat4[5] * rhs.y)
+            + (mat4[6] * rhs.z) + (mat4[7] * rhs.w);
+    result.z = (mat4[8] * rhs.x) + (mat4[9] * rhs.y)
+            + (mat4[10] * rhs.z) + (mat4[11] * rhs.w);
+    result.w = (mat4[12] * rhs.x) + (mat4[13] * rhs.y)
+            + (mat4[14] * rhs.z) + (mat4[15] * rhs.w);
+	return (result);
+}
+
+Matrix	Matrix::operator*(const Matrix &rhs)
 {
     Matrix res;
     float sum;
@@ -91,7 +90,7 @@ Matrix	mat4_mul(Matrix m1, Matrix m2)
             sum = 0.0f;
             while (k < 4)
             {
-                sum += (m1.mat4[i * 4 + k] * m2.mat4[k * 4 + j]);
+                sum += (mat4[i * 4 + k] * rhs.mat4[k * 4 + j]);
                 k++;
             }
             res.mat4[i * 4 + j] = sum;
@@ -102,22 +101,7 @@ Matrix	mat4_mul(Matrix m1, Matrix m2)
     return (res);
 }
 
-Vec4	mul_matrix4_vec4(Matrix mat, Vec4 vec4)
-{
-    Vec4 out;
-
-    out.x = (mat.mat4[0] * vec4.x) + (mat.mat4[1] * vec4.y)
-            + (mat.mat4[2] * vec4.z) + (mat.mat4[3] * vec4.w);
-    out.y = (mat.mat4[4] * vec4.x) + (mat.mat4[5] * vec4.y)
-            + (mat.mat4[6] * vec4.z) + (mat.mat4[7] * vec4.w);
-    out.z = (mat.mat4[8] * vec4.x) + (mat.mat4[9] * vec4.y)
-            + (mat.mat4[10] * vec4.z) + (mat.mat4[11] * vec4.w);
-    out.w = (mat.mat4[12] * vec4.x) + (mat.mat4[13] * vec4.y)
-            + (mat.mat4[14] * vec4.z) + (mat.mat4[15] * vec4.w);
-    return (out);
-}
-
-Matrix get_inverse(Matrix m)
+Matrix inverse(const Matrix &m)
 {
     Matrix out;
     Matrix inv;
@@ -312,8 +296,8 @@ Matrix	modelMatrix(Vec3 pos, Vec3 rot, Vec3 scale)
     mrot = rotMatrix(fmod(rot.x, 360.0f), fmod(rot.y, 360.0f), fmod(rot.z, 360.0f));
     mtran = transMatrix(pos.x, pos.y, pos.z);
     mscale = scaleMatrix(scale.x, scale.y, scale.z);
-    tmp = mat4_mul(mscale, mrot);
-    model = mat4_mul(tmp, mtran);
+	tmp = mscale * mrot;
+	model = tmp * mtran;
     return (model);
 }
 

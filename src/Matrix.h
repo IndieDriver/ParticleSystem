@@ -11,12 +11,11 @@ class Matrix {
         void init_matrix();
         void print();
         void get_identity();
-        Vec4 mul_matrix4_vec4(const Vec4& vec4);
+		Vec4 operator*(const Vec4 &rhs);
+		Matrix operator*(const Matrix &rhs);
         void transpose();
 };
-Matrix get_inverse(Matrix m);
-Matrix	mat4_mul(Matrix m1, Matrix m2);
-Vec4	mul_matrix4_vec4(Matrix mat, Vec4 vec4);
+Matrix  inverse(const Matrix &rhs);
 
 Matrix  getMVP(Matrix model, Matrix view, Matrix proj);
 Matrix  modelMatrix(Vec3 position = (0.0f, 0.0f, 0.0f), Vec3 rot = Vec3(0.0f, 0.0f, 0.0f), Vec3 scale = Vec3(1.0f, 1.0f, 1.0f));

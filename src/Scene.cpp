@@ -91,13 +91,13 @@ cl_float4 Scene::getCursorPosInWorldSpace() {
 	float   y = 1.0f - (2.0f * camera->inputHandler->mousey) / HEIGHT;
 	Vec4    rayClip(x, y, -1.0f, 1.0f);
 
-	Matrix  invProj = get_inverse(camera->proj);
-	Vec4    rayEye = invProj.mul_matrix4_vec4(rayClip);
+	Matrix  invProj = inverse(camera->proj);
+	Vec4    rayEye = invProj * rayClip;
 	rayEye = Vec4(rayEye.x, rayEye.y, -1.0f, 0.0f);
 
-	Matrix  invView = get_inverse(camera->view);
-	Vec4    rayWorld4 = invView.mul_matrix4_vec4(rayEye);
-	Vec3    rayWorld(rayWorld4.x, rayWorld4.y, rayWorld4.z);
+	Matrix  invView = inverse(camera->view);
+	Vec4    rayWorld4 = invView * rayEye;
+	Vec3    rayWorld(rayWorld4);
 	rayWorld.normalize();
 
 	Vec3 planNormal = camera->dir;
