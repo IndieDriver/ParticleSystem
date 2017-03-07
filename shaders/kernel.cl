@@ -12,39 +12,44 @@ __kernel void clinit(float4 cursor, __global float4 *lpos, __global float4 *lcol
     float4 vel = lvel[global_id];
     float4 col = lcol[global_id];
 
-    float radius = 1.0f;
 
-    float x = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
-    float y = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
-    float z = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
 
-    int iter_max = 10;
-    while ((x * x) + (y * y) + (z * z) > (radius * radius) && iter_max > -1 ){
-        x = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
-        y = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
-        z = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
-        iter_max = iter_max - 1;
-        //printf("%u %f %f %f\n", global_id, x, y, z);
-     }
+    if (cursor.w == -1.0f){
+        float radius = 1.0f;
+        float x = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
+        float y = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
+        float z = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
 
-     pos.x = x;
-     pos.y = y;
-     pos.z = z;
+        int iter_max = 10;
+        while ((x * x) + (y * y) + (z * z) > (radius * radius) && iter_max > -1 ){
+            x = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
+            y = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
+            z = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
+            iter_max = iter_max - 1;
+        }
+        pos.x = x;
+        pos.y = y;
+        pos.z = z;
+    } else {
+         float radius = 6.0f;
+         float x = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
+         float y = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
+         float z = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
+
+         int iter_max = 10;
+         while ((x * x) + (y * y) + (z * z) > (radius * radius) && iter_max > -1 ){
+              x = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
+              y = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
+              z = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
+              iter_max = iter_max - 1;
+         }
+         pos.x = x;
+         pos.y = y;
+         pos.z = z;
+    }
+
+
      
-/*
-    int global_id = get_global_id(0);
-    unsigned int tmp = get_num_groups(0);
-    unsigned int seed = (unsigned int)global_id + (unsigned int)(get_random_0_1_ul(&tmp));
-    float4 pos = lpos[global_id];
-    float4 vel = lvel[global_id];
-    float4 col = lcol[global_id];
-
-    float r = (float)get_random_0_1_ul(&seed) * (1.0f);
-    float phi = (float)(get_random_0_1_ul(&seed) * M_PI);
-    float theta = (float)(get_random_0_1_ul(&seed) * M_PI * 2.0f);
-    pos.x = (float)(r * cos(theta) * sin(phi));
-    pos.y = (float)(r * sin(theta) * sin(phi));
-    pos.z = (float)(r * cos(phi)); */
     pos.w = 0.0f;
     col.x = 1.0f;
     col.y = 0.0f;

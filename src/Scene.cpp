@@ -31,14 +31,14 @@ void Scene::draw(const Shader &shader) {
 }
 
 void Scene::initScene(){
-	//TODO: init in cube
 	try{
 		cl_float4 cursorPos;
-		cursorPos.x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-		cursorPos.y = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-		cursorPos.z = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-		cursorPos.w = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		if (sphere)
+			cursorPos = {0.0f, 0.0f, 0.0f, -1.0f};
+		else
+			cursorPos = {0.0f, 0.0f, 0.0f, 0.0f};
 
+		needInit = false;
 		glFlush();
 		glFinish();
 		int status = 0;
@@ -131,5 +131,10 @@ void Scene::queryInput() {
 		camera->inputHandler->keybrDisabled = !camera->inputHandler->keybrDisabled;
 		//camera->inputHandler->mouseDisabled = !camera->inputHandler->mouseDisabled;
 		//gravity = false;
+	}
+	if (camera->inputHandler->keys[GLFW_KEY_J]){
+		sphere = !sphere;
+		gravity = false;
+		needInit = true;
 	}
 }

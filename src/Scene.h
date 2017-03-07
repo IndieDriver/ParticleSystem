@@ -14,8 +14,10 @@ public:
 	CLenv           *cl;
 	Camera          *camera;
 	GLuint          vao;
+	bool            needInit = true;
 	bool            isFreeCam = false;
 	bool            gravity = false;
+	bool            sphere = true;
 	Scene(CLenv *env, Camera *camera);
 	void            draw(const Shader &shader);
 	void            initScene();

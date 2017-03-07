@@ -39,7 +39,11 @@ int main(void)
     {
 	    scene.queryInput();
         scene.draw(shader);
-        scene.animate(cursorpos);
+	    if (scene.needInit)
+            scene.initScene();
+        else
+            scene.animate(cursorpos);
+        //scene.animate(cursorpos);
         env.updateFpsCounter();
         glfwSwapBuffers(env.window);
         glfwPollEvents();
