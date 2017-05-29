@@ -67,7 +67,8 @@ CLenv::CLenv(std::string kernelFileName)
                 CL_WGL_HDC_KHR, (cl_context_properties) wglGetCurrentDC(),
                 CL_CONTEXT_PLATFORM, (cl_context_properties) (default_platform)(), 0};
         #elif defined TARGET_OS_MAC
-        CGLContextObj glContext = CGLGetCurrentContext();
+        //CGLContextObj glContext = CGLGetCurrentContext();
+        CGLContextObj glContext = (CGLContextObj) glfwGetCurrentContext();
         CGLShareGroupObj shareGroup = CGLGetShareGroup(glContext);
         cl_context_properties properties[] = {
                 CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,

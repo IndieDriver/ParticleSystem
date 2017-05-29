@@ -63,10 +63,7 @@ void Scene::animate(cl_float4 cursorPos){
 	if (gravity)
 		cursorPos = getCursorPosInWorldSpace();
 	else {
-		cursorPos.x = -1.0f;
-		cursorPos.y = -1.0f;
-		cursorPos.z = -1.0f;
-		cursorPos.w = -1.0f;
+		cursorPos = { -1.0f, -1.0f, -1.0f, -1.0f };
 	}
 	try{
 		glFlush();
@@ -114,9 +111,9 @@ cl_float4 Scene::getCursorPosInWorldSpace() {
 		printf("Sould not happened\n");
 
 	cl_float4 result;
-	result.x = camera->pos.x + rayWorld.x * t;
-	result.y = camera->pos.y + rayWorld.y * t;
-	result.z = camera->pos.z + rayWorld.z * t;
+	result.s[0] = camera->pos.x + rayWorld.x * t;
+	result.s[1] = camera->pos.y + rayWorld.y * t;
+	result.s[2] = camera->pos.z + rayWorld.z * t;
 
 	return (result);
 }

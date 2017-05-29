@@ -30,10 +30,10 @@ int main(void)
 
     bool anim = false;
 	cl_float4 cursorpos;
-    cursorpos.x = 0.0f;
-    cursorpos.y = 0.0f;
-    cursorpos.z = 0.0f;
-    cursorpos.w = 0.0f;
+    cursorpos.s[0] = 0.0f;
+    cursorpos.s[1] = 0.0f;
+    cursorpos.s[2] = 0.0f;
+    cursorpos.s[3] = 0.0f;
     scene.initScene();
     while (!glfwWindowShouldClose(env.window))
     {
