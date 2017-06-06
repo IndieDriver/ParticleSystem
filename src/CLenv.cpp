@@ -66,10 +66,10 @@ CLenv::CLenv(std::string kernelFileName)
                 CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext(),
                 CL_WGL_HDC_KHR, (cl_context_properties) wglGetCurrentDC(),
                 CL_CONTEXT_PLATFORM, (cl_context_properties) (default_platform)(), 0};
-        #elif defined TARGET_OS_MAC
-        //CGLContextObj glContext = CGLGetCurrentContext();
-        CGLContextObj glContext = (CGLContextObj) glfwGetCurrentContext();
-        CGLShareGroupObj shareGroup = CGLGetShareGroup(glContext);
+		#elif defined __APPLE__
+		CGLContextObj glContext = (CGLContextObj)CGLGetCurrentContext();
+        //CGLContextObj glContext = (CGLContextObj) glfwGetCurrentContext();
+		CGLShareGroupObj shareGroup = CGLGetShareGroup(glContext);
         cl_context_properties properties[] = {
                 CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,
                 (cl_context_properties)shareGroup, 0};
@@ -104,7 +104,7 @@ bool CLenv::loadProgram(std::string filename, cl::Device device){
     try {
         program.build({device});
     } catch (cl::Error e){
-        cl_build_status status = program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(device);
+        //cl_build_status status = program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(device);
         std::string name = device.getInfo<CL_DEVICE_NAME>();
         std::string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
         std::cerr << "Build log for " << name << ":" << std::endl << buildlog << std::endl;

@@ -269,12 +269,7 @@ float	Vec4::length()
 void	Vec4::normalize()
 {
     float	fact;
-    float	len;
 
-    /*
-    if ((len = lenght()) == 0)
-        len = 0.001;
-    fact = 1.0f / len; */
     fact = 1.0f / length();
     x *= fact;
     y *= fact;

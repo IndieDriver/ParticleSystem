@@ -8,9 +8,10 @@
 # define M_PI           3.14159265358979323846
 # include <glad.h>
 # include <GLFW/glfw3.h>
+# include <OpenGL/OpenGL.h>
+# include <OpenCL/opencl.h>
+# include <OpenCL/cl_gl.h>
 # include <CL/cl.hpp>
-# include <CL/opencl.h>
-# include <CL/cl_gl.h>
 # include <math.h>
 # include <string>
 # include <iostream>
@@ -18,6 +19,5 @@
 # include <cassert>
 # include "Vec3.h"
 # include "Matrix.h"
-
 
 #endif //PARTICLESYSTEM_PART_H

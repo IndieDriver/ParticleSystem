@@ -1,7 +1,7 @@
 #include "part.h"
 #include "Shader.h"
 #include "CLenv.h"
-#include "Env.h"
+#include "env.h"
 #include "Camera.h"
 #include "Scene.h"
 

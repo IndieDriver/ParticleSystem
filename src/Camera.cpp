@@ -7,6 +7,7 @@ Camera::Camera(Vec3 position, Vec3 targetPosition, int w, int h)
     width = w;
     height = h;
 
+	(void)targetPosition;
     mouseXpos = ((float)w / 2.0f);
     mouseYpos = ((float)h / 2.0f);
 

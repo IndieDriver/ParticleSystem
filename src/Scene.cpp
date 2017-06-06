@@ -34,9 +34,9 @@ void Scene::initScene(){
 	try{
 		cl_float4 cursorPos;
 		if (sphere)
-			cursorPos = {0.0f, 0.0f, 0.0f, -1.0f};
+			cursorPos = {{0.0f, 0.0f, 0.0f, -1.0f}};
 		else
-			cursorPos = {0.0f, 0.0f, 0.0f, 0.0f};
+			cursorPos = {{0.0f, 0.0f, 0.0f, 0.0f}};
 
 		needInit = false;
 		glFlush();
@@ -63,7 +63,7 @@ void Scene::animate(cl_float4 cursorPos){
 	if (gravity)
 		cursorPos = getCursorPosInWorldSpace();
 	else {
-		cursorPos = { -1.0f, -1.0f, -1.0f, -1.0f };
+		cursorPos = {{-1.0f, -1.0f, -1.0f, -1.0f}};
 	}
 	try{
 		glFlush();

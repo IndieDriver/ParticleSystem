@@ -30,15 +30,15 @@ OBJ_C = $(SRC_C:.c=.o)
 NAME = particle-system
 CC = clang
 RM = rm -f
-CFLAGS = -std=gnu++11
+CFLAGS = -std=gnu++14 -Wall -Werror -Wextra
 
-LIB_PATH = ./third-party/glad/	./third-party/glfw/lib/
+LIB_PATH = ./third-party/glad/	./third-party/glfw/src/
 LIB_NAME = -framework OpenCL -lglfw3 -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo
 
 LIB = $(addprefix -L,$(LIB_PATH))
 LFLAGS = $(LIB) $(LIB_NAME)
 
-INC_PATH = ./third-party/glad/ ./third-party/glfw/include/ ./third-party/
+INC_PATH = ./third-party/ ./third-party/glad/ ./third-party/glfw/include/
 INC = $(addprefix -I,$(INC_PATH))
 
 all: $(NAME)

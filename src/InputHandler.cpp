@@ -1,6 +1,8 @@
 #include "InputHandler.h"
 
 void    keyCallback(GLFWwindow *window, int key, int scancode, int action, int mode) {
+	(void)scancode;
+	(void)mode;
 	InputHandler *inputHandler = reinterpret_cast<InputHandler *>(glfwGetWindowUserPointer(window));
 	if (action == GLFW_PRESS) {
 		inputHandler->keys[key] = true;
