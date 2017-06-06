@@ -40,7 +40,8 @@ GLuint Shader::compileShader(std::string fileName, GLuint shaderType){
 	} else
 		std::cout << "Invalid shader file name: " << fileName << "\n";
 	id = glCreateShader(shaderType);
-	glShaderSource(id, 1, (const char**) &fileContent, NULL); //Todo: find a cleaner way
+	const char *fileContentChar = fileContent.c_str();
+	glShaderSource(id, 1, &fileContentChar, NULL);
 	glCompileShader(id);
 	glGetShaderiv(id, GL_COMPILE_STATUS, &err);
 	if (GL_TRUE != err)

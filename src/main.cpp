@@ -8,11 +8,11 @@
 int main(void)
 {
     Env env(WIDTH, HEIGHT);
-
     Shader shader("shaders/part.fs.glsl", "shaders/part.vs.glsl");
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+
     CLenv cl("shaders/kernel.cl");
     cl.createBuffer();
 

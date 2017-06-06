@@ -51,7 +51,7 @@ CLenv::CLenv(std::string kernelFileName)
             std::cout << " No platforms found. Check OpenCL installation!\n";
             exit(1);
         }
-        cl::Platform default_platform = all_platforms[1];
+        cl::Platform default_platform = all_platforms[0];
         std::cout << "Using platform: " << default_platform.getInfo<CL_PLATFORM_NAME>() << "\n";
         std::vector<cl::Device> all_devices;
         default_platform.getDevices(CL_DEVICE_TYPE_GPU, &all_devices);
@@ -68,7 +68,6 @@ CLenv::CLenv(std::string kernelFileName)
                 CL_CONTEXT_PLATFORM, (cl_context_properties) (default_platform)(), 0};
 		#elif defined __APPLE__
 		CGLContextObj glContext = (CGLContextObj)CGLGetCurrentContext();
-        //CGLContextObj glContext = (CGLContextObj) glfwGetCurrentContext();
 		CGLShareGroupObj shareGroup = CGLGetShareGroup(glContext);
         cl_context_properties properties[] = {
                 CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,

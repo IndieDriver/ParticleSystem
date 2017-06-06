@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(ParticleSystem)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -g")
 find_package(OpenGL REQUIRED)
 
 #Handle GLFW
@@ -12,12 +12,7 @@ include_directories(third-party)
 
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-FIND_PACKAGE(OpenCL)
-
-message(ERROR "OpenCL found: ${OPENCL_FOUND}")
-message(ERROR "OpenCL includes: ${OPENCL_INCLUDE_DIRS}")
-message(ERROR "OpenCL CXX includes: ${OPENCL_HAS_CPP_BINDINGS}")
-message(ERROR "OpenCL libraries: ${OPENCL_LIBRARIES}")
+FIND_PACKAGE(OpenCL REQUIRED)
 
 #INCLUDE_DIRECTORIES($ENV{AMDAPPSDKROOT}/include)
 INCLUDE_DIRECTORIES(${OPENCL_INCLUDE_DIR})

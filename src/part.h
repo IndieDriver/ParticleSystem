@@ -6,9 +6,9 @@
 # define HEIGHT 720
 # define PARTICLE_NUM 1000000
 # define M_PI           3.14159265358979323846
+# include <OpenGL/OpenGL.h>
 # include <glad.h>
 # include <GLFW/glfw3.h>
-# include <OpenGL/OpenGL.h>
 # include <OpenCL/opencl.h>
 # include <OpenCL/cl_gl.h>
 # include <CL/cl.hpp>
