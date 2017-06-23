@@ -19,6 +19,7 @@ Scene::Scene(CLenv *clenv, Camera *cam) {
 
 void Scene::draw(const Shader &shader) {
 	GLint mvpID = glGetUniformLocation(shader.id, "MVP");
+	GLint cursorPosID = glGetUniformLocation(shader.id, "cursorPos");
 	Matrix model = modelMatrix(Vec3(0.0f), Vec3(0.0f), Vec3(1.0f, 1.0f, 1.0f));
 	Matrix MVP = getMVP(model, camera->view, camera->proj);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -26,6 +27,10 @@ void Scene::draw(const Shader &shader) {
 	if (glGetError() != GL_NO_ERROR)
 		std::cout << "Error\n";
 	glUniformMatrix4fv(mvpID, 1, GL_FALSE, MVP.mat4);
+	cl_float4 cursorPos = getCursorPosInWorldSpace();
+	Vec3 cursor(cursorPos.x, cursorPos.y, cursorPos.z);
+	glUniform3fv(cursorPosID, 1, &(cursor.x));
+
 	glBindVertexArray (vao);
 	glDrawArrays (GL_POINTS, 0, PARTICLE_NUM);
 }
@@ -37,7 +42,6 @@ void Scene::initScene(){
 			cursorPos = {{0.0f, 0.0f, 0.0f, -1.0f}};
 		else
 			cursorPos = {{0.0f, 0.0f, 0.0f, 0.0f}};
-
 		needInit = false;
 		glFlush();
 		glFinish();

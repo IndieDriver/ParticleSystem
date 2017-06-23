@@ -43,7 +43,6 @@ int main(void)
             scene.initScene();
         else
             scene.animate(cursorpos);
-        //scene.animate(cursorpos);
         env.updateFpsCounter();
         glfwSwapBuffers(env.window);
         glfwPollEvents();
