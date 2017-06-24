@@ -52,7 +52,8 @@ CLenv::CLenv(std::string kernelFileName)
             exit(1);
         }
         cl::Platform default_platform = all_platforms[0];
-        std::cout << "Using platform: " << default_platform.getInfo<CL_PLATFORM_NAME>() << "\n";
+		std::cout << "OpenCL " <<
+			default_platform.getInfo<CL_PLATFORM_VERSION>() << std::endl;
         std::vector<cl::Device> all_devices;
         default_platform.getDevices(CL_DEVICE_TYPE_GPU, &all_devices);
         const cl::Device default_device = all_devices[0];
@@ -81,8 +82,7 @@ CLenv::CLenv(std::string kernelFileName)
             kernel = cl::Kernel(program, "clpart");
         }
     }
-    catch (cl::Error e)
-    {
+    catch (cl::Error e) {
         std::cout << std::endl << e.what() << " : " << e.err() << std::endl;
     }
 }

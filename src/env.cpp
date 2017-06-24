@@ -16,16 +16,11 @@ Env::Env(int width, int height) {
     }
     glfwMakeContextCurrent(window);
     if(!gladLoadGL()) {
-        printf("Something went wrong!\n");
+		std::cout << "Glad loading error " << std::endl;
         exit(-1);
     }
-    printf("OpenGL %d.%d\n", GLVersion.major, GLVersion.minor);
-    if (GLVersion.major < 2) {
-        printf("Your system doesn't support OpenGL >= 2!\n");
-        exit(0);
-    }
-    printf("OpenGL %s, GLSL %s\n", glGetString(GL_VERSION),
-           glGetString(GL_SHADING_LANGUAGE_VERSION));
+	std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
+	std::cout << "GLSL " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
     return ;
 }
 

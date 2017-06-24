@@ -24,8 +24,6 @@ void Scene::draw(const Shader &shader) {
 	Matrix MVP = getMVP(model, camera->view, camera->proj);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	shader.use();
-	if (glGetError() != GL_NO_ERROR)
-		std::cout << "Error\n";
 	glUniformMatrix4fv(mvpID, 1, GL_FALSE, MVP.mat4);
 	cl_float4 cursorPos = getCursorPosInWorldSpace();
 	Vec3 cursor(cursorPos.x, cursorPos.y, cursorPos.z);
