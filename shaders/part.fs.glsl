@@ -1,9 +1,7 @@
 #version 330
 uniform vec3 cursorPos;
-in vec3 colour;
 in vec3 pos;
 out vec4 frag_colour;
-
 
 void main () {
 	float dist = distance(cursorPos, pos);

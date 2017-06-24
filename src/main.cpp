@@ -29,11 +29,7 @@ int main(void)
     Scene scene(&cl, &camera);
 
     bool anim = false;
-	cl_float4 cursorpos;
-    cursorpos.s[0] = 0.0f;
-    cursorpos.s[1] = 0.0f;
-    cursorpos.s[2] = 0.0f;
-    cursorpos.s[3] = 0.0f;
+	cl_float4 cursorpos = scene.getCursorPosInWorldSpace();
     scene.initScene();
     while (!glfwWindowShouldClose(env.window))
     {

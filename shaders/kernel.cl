@@ -4,15 +4,12 @@ float get_random_0_1_ul(unsigned int* seed)
   return  (float)(*seed) * 4.6566129e-10; //(4.6566129e-10 = 1/(2^31-1) = 1/2147483647)
 }
 
-__kernel void clinit(float4 cursor, __global float4 *lpos, __global float4 *lcol, __global float4 *lvel)
+__kernel void clinit(float4 cursor, __global float4 *lpos, __global float4 *lvel)
 {
     int global_id = get_global_id(0);
     unsigned int seed = (unsigned int)global_id;
     float4 pos = lpos[global_id];
     float4 vel = lvel[global_id];
-    float4 col = lcol[global_id];
-
-
 
     if (cursor.w == -1.0f){
         float radius = 1.0f;
@@ -21,7 +18,7 @@ __kernel void clinit(float4 cursor, __global float4 *lpos, __global float4 *lcol
         float z = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
 
         int iter_max = 10;
-        while ((x * x) + (y * y) + (z * z) > (radius * radius) && iter_max > -1 ){
+        while ((x * x) + (y * y) + (z * z) > (radius * radius) && iter_max > -1){
             x = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
             y = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
             z = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
@@ -37,7 +34,7 @@ __kernel void clinit(float4 cursor, __global float4 *lpos, __global float4 *lcol
          float z = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
 
          int iter_max = 10;
-         while ((x * x) + (y * y) + (z * z) > (radius * radius) && iter_max > -1 ){
+         while ((x * x) + (y * y) + (z * z) > (radius * radius) && iter_max > -1){
               x = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
               y = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
               z = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
@@ -48,31 +45,22 @@ __kernel void clinit(float4 cursor, __global float4 *lpos, __global float4 *lcol
          pos.z = z;
     }
 
-
-     
     pos.w = 0.0f;
-    col.x = 1.0f;
-    col.y = 0.0f;
-    col.z = 0.0f;
-    col.w = 0.0f;
     vel.x = 0.0f;
     vel.y = 0.0f;
     vel.z = 0.0f;
     vel.w = 0.0f;
     lpos[global_id] = pos;
-    lcol[global_id] = col;
     lvel[global_id] = vel;
 }
 
-__kernel void clpart(float4 cursor, __global float4 *lpos, __global float4 *lcol, __global float4 *lvel)
+__kernel void clpart(float4 cursor, __global float4 *lpos, __global float4 *lvel)
 {
     int global_id = get_global_id(0);
     float4 pos = lpos[global_id];
     float4 vel = lvel[global_id];
-    float4 col = lcol[global_id];
 
-    if (cursor.x != -1.0f && cursor.y != -1.0f)
-    {
+    if (cursor.x != -1.0f && cursor.y != -1.0f) {
         float m = 1.0f;
         float dt = 0.1f;
         pos.w = 0.0f;
@@ -82,15 +70,10 @@ __kernel void clpart(float4 cursor, __global float4 *lpos, __global float4 *lcol
         float acc = G*(1.0f*m) / dist;
         float4 a = acc * force;
 
-        col.x = dist * 0.2f;
-        col.y = dist * 0.1f;
-        col.z = dist * 0.5f;
-
         a = normalize(a);
         vel += a * dt;
         pos += vel * dt;
     }
     lpos[global_id] = pos;
-    lcol[global_id] = col;
     lvel[global_id] = vel;
 }

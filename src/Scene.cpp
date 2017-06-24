@@ -10,11 +10,7 @@ Scene::Scene(CLenv *clenv, Camera *cam) {
 	glBindBuffer(GL_ARRAY_BUFFER, cl->pos_id);
 	glVertexAttribPointer (0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
-	glBindBuffer(GL_ARRAY_BUFFER, cl->col_id);
-	glVertexAttribPointer (1, 4, GL_FLOAT, GL_FALSE, 0, NULL);
-
 	glEnableVertexAttribArray (0);
-	glEnableVertexAttribArray (1);
 }
 
 void Scene::draw(const Shader &shader) {
@@ -46,7 +42,6 @@ void Scene::initScene(){
 		int status = 0;
 		std::vector<cl::Memory> cl_vbos;
 		cl_vbos.push_back(cl->buf_pos);
-		cl_vbos.push_back(cl->buf_col);
 		cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
 		cl->enqueueKernel(cl->kinit, cursorPos);
 		status = cl->cmds.finish();
@@ -62,9 +57,11 @@ void Scene::initScene(){
 }
 
 void Scene::animate(cl_float4 cursorPos){
-	if (gravity)
+	cursorPos = getCursorPosInWorldSpace();
+	cursorPos.w = -1.0f;
+	if (gravity) {
 		cursorPos = getCursorPosInWorldSpace();
-	else {
+	} else {
 		cursorPos = {{-1.0f, -1.0f, -1.0f, -1.0f}};
 	}
 	try{
@@ -73,7 +70,6 @@ void Scene::animate(cl_float4 cursorPos){
 		int status = 0;
 		std::vector<cl::Memory> cl_vbos;
 		cl_vbos.push_back(cl->buf_pos);
-		cl_vbos.push_back(cl->buf_col);
 		status = cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
 		cl->enqueueKernel(cl->kernel, cursorPos);
 		status = cl->cmds.finish();

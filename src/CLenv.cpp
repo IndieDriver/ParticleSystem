@@ -4,8 +4,7 @@ void CLenv::enqueueKernel(cl::Kernel k, cl_float4 cursorpos){
     try{
         k.setArg(0, sizeof(cl_float4), &cursorpos);
         k.setArg(1, sizeof(cl_mem), &buf_pos);
-        k.setArg(2, sizeof(cl_mem), &buf_col);
-        k.setArg(3, sizeof(cl_mem), &buf_vel);
+        k.setArg(2, sizeof(cl_mem), &buf_vel);
         cmds.enqueueNDRangeKernel(k, 0, cl::NDRange(PARTICLE_NUM));
     }
     catch (cl::Error e)
@@ -20,10 +19,6 @@ void CLenv::createBuffer() {
         glBindBuffer(GL_ARRAY_BUFFER, pos_id);
         glBufferData(GL_ARRAY_BUFFER, 4 * PARTICLE_NUM * sizeof(float), NULL, GL_STATIC_DRAW);
 
-        glGenBuffers(1, &col_id);
-        glBindBuffer(GL_ARRAY_BUFFER, col_id);
-        glBufferData(GL_ARRAY_BUFFER, 4 * PARTICLE_NUM * sizeof(float), NULL, GL_STATIC_DRAW);
-
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         int status = 0;
 
@@ -35,8 +30,6 @@ void CLenv::createBuffer() {
         if (status < 0)
            std::cout << status << "enqueue error\n";
         buf_pos = cl::BufferGL(this->context, CL_MEM_READ_WRITE, pos_id);
-        buf_col = cl::BufferGL(this->context, CL_MEM_READ_WRITE, col_id);
-
     }catch (cl::Error e) {
         std::cout << std::endl << e.what() << " : Error " << e.err() << std::endl;
     }
@@ -59,9 +52,9 @@ CLenv::CLenv(std::string kernelFileName)
         const cl::Device default_device = all_devices[0];
         #ifdef linux
         cl_context_properties properties[] = {
-                    CL_GL_CONTEXT_KHR, (cl_context_properties) glXGetCurrentContext(),
-                    CL_GLX_DISPLAY_KHR, (cl_context_properties) glXGetCurrentDisplay(),
-                    CL_CONTEXT_PLATFORM, (cl_context_properties) (default_platform)(), 0};
+            	CL_GL_CONTEXT_KHR, (cl_context_properties) glXGetCurrentContext(),
+                CL_GLX_DISPLAY_KHR, (cl_context_properties) glXGetCurrentDisplay(),
+                CL_CONTEXT_PLATFORM, (cl_context_properties) (default_platform)(), 0};
         #elif defined _WIN32
         cl_context_properties properties[] = {
                 CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext(),
