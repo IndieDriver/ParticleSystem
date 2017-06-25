@@ -33,9 +33,18 @@ void Env::updateFpsCounter() {
         previous_seconds = current_seconds;
         double fps = (double)frame_count / elapsed_seconds;
         char tmp[128];
-        sprintf (tmp, "opengl @ fps: %.2f", fps);
+        sprintf (tmp, "Particle system: %d particles @ fps: %.2f", PARTICLE_NUM, fps);
         glfwSetWindowTitle (window, tmp);
         frame_count = 0;
     }
     frame_count++;
+}
+
+float	Env::getDeltaTime() {
+	static double previousTime = glfwGetTime();
+	static int frame_count;
+	double currentTime = glfwGetTime();
+	double deltaTime = currentTime - previousTime;
+	previousTime = currentTime;
+	return ((float)deltaTime);
 }

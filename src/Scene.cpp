@@ -43,7 +43,7 @@ void Scene::initScene(){
 		std::vector<cl::Memory> cl_vbos;
 		cl_vbos.push_back(cl->buf_pos);
 		cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
-		cl->enqueueKernel(cl->kinit, cursorPos);
+		cl->enqueueKernel(cl->kinit, cursorPos, 0.0f);
 		status = cl->cmds.finish();
 		if (status < 0)
 			printf("Error clfinish\n");
@@ -56,7 +56,7 @@ void Scene::initScene(){
 
 }
 
-void Scene::animate(cl_float4 cursorPos){
+void Scene::animate(cl_float4 cursorPos, float deltaTime){
 	cursorPos = getCursorPosInWorldSpace();
 	cursorPos.w = -1.0f;
 	if (gravity) {
@@ -71,7 +71,7 @@ void Scene::animate(cl_float4 cursorPos){
 		std::vector<cl::Memory> cl_vbos;
 		cl_vbos.push_back(cl->buf_pos);
 		status = cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
-		cl->enqueueKernel(cl->kernel, cursorPos);
+		cl->enqueueKernel(cl->kernel, cursorPos, deltaTime);
 		status = cl->cmds.finish();
 		if (status < 0)
 			printf("Error clfinish\n");
@@ -120,14 +120,17 @@ void Scene::queryInput() {
 	if (camera->inputHandler == nullptr)
 		return;
 	if (camera->inputHandler->keys[GLFW_KEY_SPACE]){
-		gravity = true;
+		camera->inputHandler->keys[GLFW_KEY_SPACE] = false;
+		gravity = !gravity;
 	}
 	if (camera->inputHandler->keys[GLFW_KEY_F]) {
+		camera->inputHandler->keys[GLFW_KEY_F] = false;
 		camera->inputHandler->keybrDisabled = !camera->inputHandler->keybrDisabled;
 		//camera->inputHandler->mouseDisabled = !camera->inputHandler->mouseDisabled;
 		//gravity = false;
 	}
 	if (camera->inputHandler->keys[GLFW_KEY_J]){
+		camera->inputHandler->keys[GLFW_KEY_J] = false;
 		sphere = !sphere;
 		gravity = false;
 		needInit = true;

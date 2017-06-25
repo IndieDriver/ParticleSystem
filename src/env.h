@@ -7,7 +7,9 @@ class Env {
 public:
 	GLFWwindow* window;
 	Env(int width, int height);
-	void updateFpsCounter();
+
+	void	updateFpsCounter();
+	float	getDeltaTime();
 };
 
 

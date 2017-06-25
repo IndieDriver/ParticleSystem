@@ -25,20 +25,20 @@ int main(void)
     glfwSetCursorPosCallback(env.window, mouseCallback);
     glfwSetKeyCallback(env.window, keyCallback);
 	//glfwSetCursorPos(env.window, (camera.width / 2.0), (camera.height / 2.0));
+	glfwSwapInterval(0);
 
     Scene scene(&cl, &camera);
 
     bool anim = false;
 	cl_float4 cursorpos = scene.getCursorPosInWorldSpace();
     scene.initScene();
-    while (!glfwWindowShouldClose(env.window))
-    {
+    while (!glfwWindowShouldClose(env.window)) {
 	    scene.queryInput();
         scene.draw(shader);
 	    if (scene.needInit)
             scene.initScene();
         else
-            scene.animate(cursorpos);
+            scene.animate(cursorpos, env.getDeltaTime());
         env.updateFpsCounter();
         glfwSwapBuffers(env.window);
         glfwPollEvents();

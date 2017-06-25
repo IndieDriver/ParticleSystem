@@ -73,5 +73,4 @@ void Camera::queryInput() {
 		mouseYpos = inputHandler->mousey;
 		mouseMoved = true;
 	}
-
 }

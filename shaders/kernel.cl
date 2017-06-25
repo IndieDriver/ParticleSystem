@@ -1,10 +1,10 @@
 float get_random_0_1_ul(unsigned int* seed)
 {
   *seed = ((*seed) * 16807 ) % 2147483647;
-  return  (float)(*seed) * 4.6566129e-10; //(4.6566129e-10 = 1/(2^31-1) = 1/2147483647)
+  return  (float)(*seed) * 4.6566129e-10;
 }
 
-__kernel void clinit(float4 cursor, __global float4 *lpos, __global float4 *lvel)
+__kernel void clinit(float deltaTime, float4 cursor, __global float4 *lpos, __global float4 *lvel)
 {
     int global_id = get_global_id(0);
     unsigned int seed = (unsigned int)global_id;
@@ -54,7 +54,7 @@ __kernel void clinit(float4 cursor, __global float4 *lpos, __global float4 *lvel
     lvel[global_id] = vel;
 }
 
-__kernel void clpart(float4 cursor, __global float4 *lpos, __global float4 *lvel)
+__kernel void clpart(float deltaTime, float4 cursor, __global float4 *lpos, __global float4 *lvel)
 {
     int global_id = get_global_id(0);
     float4 pos = lpos[global_id];
@@ -62,7 +62,6 @@ __kernel void clpart(float4 cursor, __global float4 *lpos, __global float4 *lvel
 
     if (cursor.x != -1.0f && cursor.y != -1.0f) {
         float m = 1.0f;
-        float dt = 0.1f;
         pos.w = 0.0f;
         float4 force = cursor - pos;
         float dist = sqrt(force.x * force.x + force.y * force.y + force.z * force.z);
@@ -71,8 +70,8 @@ __kernel void clpart(float4 cursor, __global float4 *lpos, __global float4 *lvel
         float4 a = acc * force;
 
         a = normalize(a);
-        vel += a * dt;
-        pos += vel * dt;
+		vel += a * deltaTime;
+		pos += vel;
     }
     lpos[global_id] = pos;
     lvel[global_id] = vel;

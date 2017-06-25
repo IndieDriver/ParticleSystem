@@ -1,10 +1,11 @@
 #include "CLenv.h"
 
-void CLenv::enqueueKernel(cl::Kernel k, cl_float4 cursorpos){
+void CLenv::enqueueKernel(cl::Kernel k, cl_float4 cursorpos, float deltaTime){
     try{
-        k.setArg(0, sizeof(cl_float4), &cursorpos);
-        k.setArg(1, sizeof(cl_mem), &buf_pos);
-        k.setArg(2, sizeof(cl_mem), &buf_vel);
+        k.setArg(0, sizeof(cl_float), &deltaTime);
+        k.setArg(1, sizeof(cl_float4), &cursorpos);
+        k.setArg(2, sizeof(cl_mem), &buf_pos);
+        k.setArg(3, sizeof(cl_mem), &buf_vel);
         cmds.enqueueNDRangeKernel(k, 0, cl::NDRange(PARTICLE_NUM));
     }
     catch (cl::Error e)

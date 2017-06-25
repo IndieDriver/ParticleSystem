@@ -21,7 +21,7 @@ public:
 	Scene(CLenv *env, Camera *camera);
 	void            draw(const Shader &shader);
 	void            initScene();
-	void            animate(cl_float4 cursorPos);
+	void            animate(cl_float4 cursorPos, float deltaTime);
 	void            queryInput();
 	cl_float4       getCursorPosInWorldSpace();
 };
