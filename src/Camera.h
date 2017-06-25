@@ -14,6 +14,8 @@ public:
 	Matrix  view;
 	int     width;
 	int     height;
+	float	mouseXpos;
+	float	mouseYpos;
 	InputHandler *inputHandler = nullptr;
 
 	Camera(Vec3 pos = Vec3(), Vec3 rot = Vec3(), int width = 0, int height = 0);
@@ -22,8 +24,6 @@ public:
 private:
 	//Vec3 target;
 	bool  mouseMoved = false;
-	float mouseXpos;
-	float mouseYpos;
 	float horAngle;
 	float verAngle;
 	float speed = 3.0f;

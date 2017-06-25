@@ -20,10 +20,10 @@ void Scene::draw(const Shader &shader) {
 	Matrix MVP = getMVP(model, camera->view, camera->proj);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	shader.use();
-	glUniformMatrix4fv(mvpID, 1, GL_FALSE, MVP.mat4);
-	cl_float4 cursorPos = getCursorPosInWorldSpace();
-	Vec3 cursor(cursorPos.x, cursorPos.y, cursorPos.z);
-	glUniform3fv(cursorPosID, 1, &(cursor.x));
+	glUniformMatrix4fv(glGetUniformLocation(shader.id, "MVP"), 1, GL_FALSE,
+			MVP.mat4);
+	glUniform3fv(glGetUniformLocation(shader.id, "cursorPos"), 1,
+			&(lastCursorPos.x));
 
 	glBindVertexArray (vao);
 	glDrawArrays (GL_POINTS, 0, PARTICLE_NUM);
@@ -31,11 +31,14 @@ void Scene::draw(const Shader &shader) {
 
 void Scene::initScene(){
 	try{
-		cl_float4 cursorPos;
-		if (sphere)
-			cursorPos = {{0.0f, 0.0f, 0.0f, -1.0f}};
-		else
-			cursorPos = {{0.0f, 0.0f, 0.0f, 0.0f}};
+		if (shouldUpdateCursorPos) {
+			lastCursorPos = getCursorPosInWorldSpace();
+		}
+		if (sphere) {
+			lastCursorPos.w = -1.0f;
+		} else {
+			lastCursorPos.w = 0.0f;
+		}
 		needInit = false;
 		glFlush();
 		glFinish();
@@ -43,7 +46,7 @@ void Scene::initScene(){
 		std::vector<cl::Memory> cl_vbos;
 		cl_vbos.push_back(cl->buf_pos);
 		cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
-		cl->enqueueKernel(cl->kinit, cursorPos, 0.0f);
+		cl->enqueueKernel(cl->kinit, lastCursorPos, 0.0f);
 		status = cl->cmds.finish();
 		if (status < 0)
 			printf("Error clfinish\n");
@@ -56,14 +59,13 @@ void Scene::initScene(){
 
 }
 
-void Scene::animate(cl_float4 cursorPos, float deltaTime){
-	cursorPos = getCursorPosInWorldSpace();
-	cursorPos.w = -1.0f;
-	if (gravity) {
-		cursorPos = getCursorPosInWorldSpace();
-	} else {
-		cursorPos = {{-1.0f, -1.0f, -1.0f, -1.0f}};
-	}
+void Scene::animate(float deltaTime){
+	if (shouldUpdateCursorPos)
+		lastCursorPos = getCursorPosInWorldSpace();
+	if (gravity)
+		lastCursorPos.w = 0.0f;
+	else
+		lastCursorPos.w = -1.0f;
 	try{
 		glFlush();
 		glFinish();
@@ -71,7 +73,7 @@ void Scene::animate(cl_float4 cursorPos, float deltaTime){
 		std::vector<cl::Memory> cl_vbos;
 		cl_vbos.push_back(cl->buf_pos);
 		status = cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
-		cl->enqueueKernel(cl->kernel, cursorPos, deltaTime);
+		cl->enqueueKernel(cl->kernel, lastCursorPos, deltaTime);
 		status = cl->cmds.finish();
 		if (status < 0)
 			printf("Error clfinish\n");
@@ -116,23 +118,41 @@ cl_float4 Scene::getCursorPosInWorldSpace() {
 	return (result);
 }
 
-void Scene::queryInput() {
+void Scene::queryInput(Env &env) {
 	if (camera->inputHandler == nullptr)
 		return;
 	if (camera->inputHandler->keys[GLFW_KEY_SPACE]){
 		camera->inputHandler->keys[GLFW_KEY_SPACE] = false;
 		gravity = !gravity;
+		std::cout << "gravity" << std::endl;
 	}
 	if (camera->inputHandler->keys[GLFW_KEY_F]) {
 		camera->inputHandler->keys[GLFW_KEY_F] = false;
-		camera->inputHandler->keybrDisabled = !camera->inputHandler->keybrDisabled;
-		//camera->inputHandler->mouseDisabled = !camera->inputHandler->mouseDisabled;
-		//gravity = false;
+		isFreeCam = !isFreeCam;
+		if (isFreeCam) {
+			std::cout << "freecam" << std::endl;
+			camera->inputHandler->keybrDisabled = false;
+			camera->inputHandler->mouseDisabled = false;
+			camera->inputHandler->edgeDetector = true;
+			shouldUpdateCursorPos = false;
+			camera->mouseXpos = camera->inputHandler->mousex;
+			camera->mouseYpos = camera->inputHandler->mousey;
+    		glfwSetInputMode(env.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		} else {
+			camera->inputHandler->keybrDisabled = true;
+			camera->inputHandler->mouseDisabled = true;
+			shouldUpdateCursorPos = false;
+    		glfwSetInputMode(env.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
 	}
-	if (camera->inputHandler->keys[GLFW_KEY_J]){
+	if (camera->inputHandler->keys[GLFW_KEY_J]) {
 		camera->inputHandler->keys[GLFW_KEY_J] = false;
 		sphere = !sphere;
 		gravity = false;
 		needInit = true;
+	}
+	if (camera->inputHandler->keys[GLFW_KEY_G]) {
+		camera->inputHandler->keys[GLFW_KEY_G] = false;
+		shouldUpdateCursorPos = !shouldUpdateCursorPos;
 	}
 }

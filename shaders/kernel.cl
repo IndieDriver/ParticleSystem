@@ -60,7 +60,7 @@ __kernel void clpart(float deltaTime, float4 cursor, __global float4 *lpos, __gl
     float4 pos = lpos[global_id];
     float4 vel = lvel[global_id];
 
-    if (cursor.x != -1.0f && cursor.y != -1.0f) {
+    if (cursor.w != -1.0f) {
         float m = 1.0f;
         pos.w = 0.0f;
         float4 force = cursor - pos;

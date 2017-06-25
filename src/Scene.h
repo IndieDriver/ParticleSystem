@@ -18,13 +18,14 @@ public:
 	bool            isFreeCam = false;
 	bool            gravity = false;
 	bool            sphere = true;
+	bool			shouldUpdateCursorPos = true;
+	cl_float4 		lastCursorPos;
 	Scene(CLenv *env, Camera *camera);
 	void            draw(const Shader &shader);
 	void            initScene();
-	void            animate(cl_float4 cursorPos, float deltaTime);
-	void            queryInput();
+	void            animate(float deltaTime);
+	void            queryInput(Env &env);
 	cl_float4       getCursorPosInWorldSpace();
 };
-
 
 #endif //PARTICLESYSTEM_SCENE_H

@@ -10,6 +10,7 @@ public:
 	bool    keybrDisabled = true;
 	float   mousex = (float)(WIDTH / 2);
 	float   mousey = (float)(HEIGHT / 2);
+	bool	edgeDetector = false; //To smooth transition between mouse inputmode
 };
 
 void    keyCallback(GLFWwindow *window, int key, int scancode, int action, int mode);

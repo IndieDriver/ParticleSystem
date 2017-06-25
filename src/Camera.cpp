@@ -12,7 +12,7 @@ Camera::Camera(Vec3 position, Vec3 targetPosition, int w, int h)
     mouseYpos = ((float)h / 2.0f);
 
     verAngle = 0.0f;
-    horAngle = 3.14f;
+	horAngle = (float)M_PI;
     update();
 }
 
@@ -48,6 +48,11 @@ void Camera::queryInput() {
         return;
 	if (inputHandler->keybrDisabled)
         return;
+	if (inputHandler->keys[GLFW_KEY_LEFT_SHIFT]) {
+		speed = 8.0f;
+	} else {
+		speed = 3.0f;
+	}
     if (inputHandler->keys[GLFW_KEY_UP] || inputHandler->keys[GLFW_KEY_W]){
         Vec3 tmp = dir * speed * deltaTime;
         pos = pos + tmp;
@@ -71,6 +76,11 @@ void Camera::queryInput() {
 	if (inputHandler->mousex != mouseXpos || inputHandler->mousey != mouseYpos) {
 		mouseXpos = inputHandler->mousex;
 		mouseYpos = inputHandler->mousey;
+		if (inputHandler->edgeDetector) {
+			horAngle -= 0.5f * deltaTime * (width / 2.0f - mouseXpos);
+			verAngle -= 0.5f * deltaTime * (height / 2.0f - mouseYpos);
+			inputHandler->edgeDetector = false;
+		}
 		mouseMoved = true;
 	}
 }
