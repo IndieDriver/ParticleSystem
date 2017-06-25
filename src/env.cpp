@@ -33,7 +33,8 @@ void Env::updateFpsCounter() {
         previous_seconds = current_seconds;
         double fps = (double)frame_count / elapsed_seconds;
         char tmp[128];
-        sprintf (tmp, "Particle system: %d particles @ fps: %.2f", PARTICLE_NUM, fps);
+        sprintf (tmp, "Particle system: %d particles @ fps: %.2f",
+				particle_num, fps);
         glfwSetWindowTitle (window, tmp);
         frame_count = 0;
     }

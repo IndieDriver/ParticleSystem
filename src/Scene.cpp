@@ -13,7 +13,7 @@ Scene::Scene(CLenv *clenv, Camera *cam) {
 	glEnableVertexAttribArray (0);
 }
 
-void Scene::draw(const Shader &shader) {
+void Scene::draw(const Shader &shader, int num_particle) {
 	GLint mvpID = glGetUniformLocation(shader.id, "MVP");
 	GLint cursorPosID = glGetUniformLocation(shader.id, "cursorPos");
 	Matrix model = modelMatrix(Vec3(0.0f), Vec3(0.0f), Vec3(1.0f, 1.0f, 1.0f));
@@ -26,10 +26,10 @@ void Scene::draw(const Shader &shader) {
 			&(lastCursorPos.x));
 
 	glBindVertexArray (vao);
-	glDrawArrays (GL_POINTS, 0, PARTICLE_NUM);
+	glDrawArrays (GL_POINTS, 0, num_particle);
 }
 
-void Scene::initScene(){
+void Scene::initScene(int num_particle){
 	try{
 		if (shouldUpdateCursorPos) {
 			lastCursorPos = getCursorPosInWorldSpace();
@@ -46,20 +46,19 @@ void Scene::initScene(){
 		std::vector<cl::Memory> cl_vbos;
 		cl_vbos.push_back(cl->buf_pos);
 		cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
-		cl->enqueueKernel(cl->kinit, lastCursorPos, 0.0f);
+		cl->enqueueKernel(cl->kinit, lastCursorPos, num_particle, 0.0f);
 		status = cl->cmds.finish();
 		if (status < 0)
 			printf("Error clfinish\n");
 		cl->cmds.enqueueReleaseGLObjects(&cl_vbos, NULL, NULL);
 	}
-	catch (cl::Error e)
-	{
+	catch (cl::Error e) {
 		std::cout << std::endl << e.what() << " : Error " << e.err() << std::endl;
 	}
 
 }
 
-void Scene::animate(float deltaTime){
+void Scene::animate(int num_particle, float deltaTime){
 	if (shouldUpdateCursorPos)
 		lastCursorPos = getCursorPosInWorldSpace();
 	if (gravity)
@@ -73,7 +72,7 @@ void Scene::animate(float deltaTime){
 		std::vector<cl::Memory> cl_vbos;
 		cl_vbos.push_back(cl->buf_pos);
 		status = cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
-		cl->enqueueKernel(cl->kernel, lastCursorPos, deltaTime);
+		cl->enqueueKernel(cl->kernel, lastCursorPos, num_particle, deltaTime);
 		status = cl->cmds.finish();
 		if (status < 0)
 			printf("Error clfinish\n");

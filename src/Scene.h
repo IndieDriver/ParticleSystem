@@ -21,9 +21,9 @@ public:
 	bool			shouldUpdateCursorPos = true;
 	cl_float4 		lastCursorPos;
 	Scene(CLenv *env, Camera *camera);
-	void            draw(const Shader &shader);
-	void            initScene();
-	void            animate(float deltaTime);
+	void            draw(const Shader &shader, int num_particle);
+	void            initScene(int num_particle);
+	void            animate(int num_particle, float deltaTime);
 	void            queryInput(Env &env);
 	cl_float4       getCursorPosInWorldSpace();
 };

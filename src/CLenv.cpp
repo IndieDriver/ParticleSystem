@@ -1,12 +1,13 @@
 #include "CLenv.h"
 
-void CLenv::enqueueKernel(cl::Kernel k, cl_float4 cursorpos, float deltaTime){
+void CLenv::enqueueKernel(cl::Kernel k, cl_float4 cursorpos, int num_particle,
+		float deltaTime){
     try{
         k.setArg(0, sizeof(cl_float), &deltaTime);
         k.setArg(1, sizeof(cl_float4), &cursorpos);
         k.setArg(2, sizeof(cl_mem), &buf_pos);
         k.setArg(3, sizeof(cl_mem), &buf_vel);
-        cmds.enqueueNDRangeKernel(k, 0, cl::NDRange(PARTICLE_NUM));
+        cmds.enqueueNDRangeKernel(k, 0, cl::NDRange(num_particle));
     }
     catch (cl::Error e)
     {
@@ -14,20 +15,20 @@ void CLenv::enqueueKernel(cl::Kernel k, cl_float4 cursorpos, float deltaTime){
     }
 }
 
-void CLenv::createBuffer() {
+void CLenv::createBuffer(int num_particle) {
     try {
         glGenBuffers(1, &pos_id);
         glBindBuffer(GL_ARRAY_BUFFER, pos_id);
-        glBufferData(GL_ARRAY_BUFFER, 4 * PARTICLE_NUM * sizeof(float), NULL, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, 4 * num_particle * sizeof(float), NULL, GL_STATIC_DRAW);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         int status = 0;
 
-        buf_vel = cl::Buffer(this->context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, 4 * sizeof(float) * PARTICLE_NUM, NULL, &status);
+        buf_vel = cl::Buffer(this->context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, 4 * sizeof(float) * num_particle, NULL, &status);
 
         if (status < 0)
             std::cout << status << "buffer error\n";
-        //status = cmds.enqueueWriteBuffer(buf_vel, CL_TRUE, 0, 4 * sizeof(float) * PARTICLE_NUM, NULL);
+        //status = cmds.enqueueWriteBuffer(buf_vel, CL_TRUE, 0, 4 * sizeof(float) * num_particle, NULL);
         if (status < 0)
            std::cout << status << "enqueue error\n";
         buf_pos = cl::BufferGL(this->context, CL_MEM_READ_WRITE, pos_id);

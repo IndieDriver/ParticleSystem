@@ -5,8 +5,9 @@
 class CLenv {
     public:
         CLenv(std::string file_name);
-        void createBuffer();
-        void enqueueKernel(cl::Kernel kernel, cl_float4 cursor, float deltaTime);
+        void createBuffer(int num_particle);
+        void enqueueKernel(cl::Kernel kernel, cl_float4 cursor, int num_particle,
+				float deltaTime);
         cl::Device	        id;
         cl::Context			context;
         cl::CommandQueue	cmds;

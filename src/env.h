@@ -6,6 +6,7 @@
 class Env {
 public:
 	GLFWwindow* window;
+	int particle_num;
 	Env(int width, int height);
 
 	void	updateFpsCounter();
