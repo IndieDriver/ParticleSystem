@@ -12,7 +12,8 @@ Camera::Camera(Vec3 position, Vec3 targetPosition, int w, int h)
     mouseYpos = ((float)h / 2.0f);
 
     verAngle = 0.0f;
-	horAngle = (float)M_PI;
+	horAngle = 0.0f * (M_PI / 180.0f);
+    proj = projMatrix(45.0f, ((float)WIDTH /(float)HEIGHT));
     update();
 }
 
@@ -29,14 +30,16 @@ void Camera::update(){
     dir = Vec3(cos(verAngle) * sin(horAngle),
                sin(verAngle),
                cos(verAngle) * cos(horAngle));
+	dir.normalize();
     right = Vec3(sin(horAngle - 3.14f/2.0f),
                  0,
                  cos(horAngle - 3.14f/2.0f));
+	right.normalize();
     up = right.cross(dir);
+	up.normalize();
     view = viewMatrix(pos,
                       dir + pos,
                       up);
-    proj = projMatrix(45.0f, ((float)WIDTH /(float)HEIGHT));
 }
 
 Matrix getMVP(Matrix model, Matrix view, Matrix proj){
@@ -49,7 +52,7 @@ void Camera::queryInput() {
 	if (inputHandler->keybrDisabled)
         return;
 	if (inputHandler->keys[GLFW_KEY_LEFT_SHIFT]) {
-		speed = 8.0f;
+		speed = 9.0f;
 	} else {
 		speed = 3.0f;
 	}

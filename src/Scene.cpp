@@ -55,7 +55,6 @@ void Scene::initScene(int num_particle){
 	catch (cl::Error e) {
 		std::cout << std::endl << e.what() << " : Error " << e.err() << std::endl;
 	}
-
 }
 
 void Scene::animate(int num_particle, float deltaTime){
@@ -90,31 +89,42 @@ cl_float4 Scene::getCursorPosInWorldSpace() {
 	Matrix  invProj = inverse(camera->proj);
 	Vec4    rayEye = invProj * rayClip;
 	rayEye = Vec4(rayEye.x, rayEye.y, -1.0f, 0.0f);
-
 	Matrix  invView = inverse(camera->view);
+
 	Vec4    rayWorld4 = invView * rayEye;
+
 	Vec3    rayWorld(rayWorld4);
 	rayWorld.normalize();
 
 	Vec3 planNormal = camera->dir;
 	planNormal.normalize();
-	Vec3 planPos = Vec3(0.0f, 0.0f, 0.0f);
 
-	float t;
-	t = -(((planNormal.x * (camera->pos.x - planPos.x)) +
-	       (planNormal.y * (camera->pos.y - planPos.y)) +
-	       (planNormal.z * (camera->pos.z - planPos.z)))
-	      / ((planNormal.x * rayWorld.x) + (planNormal.y * rayWorld.y)
-	         + (planNormal.z * rayWorld.z)));
-	if (t < 0.0)
-		printf("Sould not happened\n");
+	Vec3 planPos = camera->pos + normalize(rayWorld) * 10.0f;
 
-	cl_float4 result;
-	result.s[0] = camera->pos.x + rayWorld.x * t;
-	result.s[1] = camera->pos.y + rayWorld.y * t;
-	result.s[2] = camera->pos.z + rayWorld.z * t;
+	float denom = planNormal.dot(rayWorld);
+	if (fabs(denom) > 1e-6) {
+		float t = (planPos - camera->pos).dot(rayWorld) / denom;
+		if (t >= 1e-6) {
+			cl_float4 result;
+			result.s[0] = camera->pos.x + rayWorld.x * t;
+			result.s[1] = camera->pos.y + rayWorld.y * t;
+			result.s[2] = camera->pos.z + rayWorld.z * t;
+			result.s[3] = 1.0f;
+			return (result);
+		} else {
+			std::cout << "invalid t" << std::endl;
+		}
+	} else {
+		std::cout << "invalid dot" << std::endl;
+	}
 
-	return (result);
+	cl_float4 zero;
+	zero.s[0] = 0.0f;
+	zero.s[1] = 0.0f;
+	zero.s[2] = 0.0f;
+	zero.s[3] = 0.0f;
+
+	return (zero);
 }
 
 void Scene::queryInput(Env &env) {
@@ -123,13 +133,11 @@ void Scene::queryInput(Env &env) {
 	if (camera->inputHandler->keys[GLFW_KEY_SPACE]){
 		camera->inputHandler->keys[GLFW_KEY_SPACE] = false;
 		gravity = !gravity;
-		std::cout << "gravity" << std::endl;
 	}
 	if (camera->inputHandler->keys[GLFW_KEY_F]) {
 		camera->inputHandler->keys[GLFW_KEY_F] = false;
 		isFreeCam = !isFreeCam;
 		if (isFreeCam) {
-			std::cout << "freecam" << std::endl;
 			camera->inputHandler->keybrDisabled = false;
 			camera->inputHandler->mouseDisabled = false;
 			camera->inputHandler->edgeDetector = true;

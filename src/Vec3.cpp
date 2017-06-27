@@ -145,6 +145,12 @@ void	Vec3::normalize()
     z *= fact;
 }
 
+Vec3	normalize(const Vec3 &rhs) {
+	Vec3 vec(rhs.x, rhs.y, rhs.z);
+	vec.normalize();
+	return (vec);
+}
+
 void Vec3::print()
 {
     printf("%f %f %f\n", x, y, z);
@@ -156,6 +162,10 @@ Vec3    Vec3::operator+(const Vec3 &rhs){
 
 Vec3    Vec3::operator-(const Vec3 &rhs){
     return (Vec3(x - rhs.x, y - rhs.y, z - rhs.z));
+}
+
+Vec3	Vec3::operator-() const {
+	return (Vec3(-x, -y, -z));
 }
 
 Vec3    Vec3::operator*(const Vec3 &rhs){
@@ -280,7 +290,6 @@ float   dot(Vec4 v1, Vec4 v2)
 {
     return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z);
 }
-
 
 void Vec4::print()
 {

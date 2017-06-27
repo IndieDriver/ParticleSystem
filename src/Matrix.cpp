@@ -59,16 +59,17 @@ void	Matrix::transpose() {
 }
 
 Vec4 Matrix::operator*(const Vec4 &rhs) {
+
 	Vec4 result;
 
-    result.x = (mat4[0] * rhs.x) + (mat4[1] * rhs.y)
-            + (mat4[2] * rhs.z) + (mat4[3] * rhs.w);
-    result.y = (mat4[4] * rhs.x) + (mat4[5] * rhs.y)
-            + (mat4[6] * rhs.z) + (mat4[7] * rhs.w);
-    result.z = (mat4[8] * rhs.x) + (mat4[9] * rhs.y)
-            + (mat4[10] * rhs.z) + (mat4[11] * rhs.w);
-    result.w = (mat4[12] * rhs.x) + (mat4[13] * rhs.y)
-            + (mat4[14] * rhs.z) + (mat4[15] * rhs.w);
+    result.x = (mat4[0] * rhs.x) + (mat4[4] * rhs.y)
+            + (mat4[8] * rhs.z) + (mat4[12] * rhs.w);
+    result.y = (mat4[1] * rhs.x) + (mat4[5] * rhs.y)
+            + (mat4[9] * rhs.z) + (mat4[13] * rhs.w);
+    result.z = (mat4[2] * rhs.x) + (mat4[6] * rhs.y)
+            + (mat4[10] * rhs.z) + (mat4[14] * rhs.w);
+    result.w = (mat4[3] * rhs.x) + (mat4[7] * rhs.y)
+            + (mat4[11] * rhs.z) + (mat4[15] * rhs.w);
 	return (result);
 }
 

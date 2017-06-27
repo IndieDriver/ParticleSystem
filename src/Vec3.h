@@ -50,6 +50,7 @@ public:
     float   dot(Vec3 v2);
     Vec3    operator+(const Vec3 &rhs);
     Vec3    operator-(const Vec3 &rhs);
+	Vec3	operator-() const;
     Vec3    operator*(const Vec3 &rhs);
     Vec3    operator/(const Vec3 &rhs);
 	Vec3    &operator+=(const Vec3 &rhs);
@@ -61,6 +62,7 @@ public:
     Vec3    operator/(const float &rhs);
 };
 
+Vec3	normalize(const Vec3 &rhs);
 Vec3	vec_scale(Vec3 v1, float fact);
 float	distance(Vec3 pt1, Vec3 pt2);
 Vec3	neg_vec(Vec3 vec);
