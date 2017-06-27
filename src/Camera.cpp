@@ -12,7 +12,7 @@ Camera::Camera(Vec3 position, Vec3 targetPosition, int w, int h)
     mouseYpos = ((float)h / 2.0f);
 
     verAngle = 0.0f;
-	horAngle = 0.0f * (M_PI / 180.0f);
+	horAngle = 180.0f * (M_PI / 180.0f);
     proj = projMatrix(45.0f, ((float)WIDTH /(float)HEIGHT));
     update();
 }
