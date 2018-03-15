@@ -26,10 +26,7 @@ set(SOURCE_FILES
         src/env.cpp
         src/CLenv.cpp
         src/Shader.cpp
-        src/Matrix.cpp
-        src/Vec3.cpp
-        src/Camera.cpp
-        src/InputHandler.cpp
+        src/camera.cpp
         src/Scene.cpp)
 add_executable(ParticleSystem ${SOURCE_FILES})
 
