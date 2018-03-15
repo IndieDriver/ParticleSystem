@@ -3,13 +3,17 @@
 #define CL_HPP_ENABLE_EXCEPTIONS
 #include "env.hpp"
 // --
-#include <OpenCL/cl_gl.h>
 #include <OpenCL/opencl.h>
+// --
+#include <OpenCL/cl_gl.h>
+// --
 #include <OpenGL/OpenGL.h>
+
 #include <math.h>
 #include <CL/cl.hpp>
 #include <fstream>
 #include <iostream>
+#include "part.hpp"
 
 class CLenv {
  public:

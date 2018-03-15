@@ -1,5 +1,4 @@
 #include "camera.hpp"
-#include "clenv.hpp"
 #include "env.hpp"
 #include "part.hpp"
 #include "scene.hpp"
@@ -26,7 +25,6 @@ int main(int ac, char **av) {
               << std::endl;
   }
   Shader shader("shaders/part.frag", "shaders/part.vert");
-  GL_DUMP_ERROR("shader");
 
   CLenv cl("shaders/kernel.cl");
   cl.createBuffer(particle_count);

@@ -24,12 +24,12 @@ set(SOURCE_FILES
         third-party/glad/glad.c
         src/main.cpp
         src/env.cpp
-        src/clenv.cpp
         src/shader.cpp
         src/camera.cpp
         src/scene.cpp)
 add_executable(ParticleSystem ${SOURCE_FILES})
 
 target_link_libraries(ParticleSystem glfw ${GLFW_LIBRARIES})
+target_link_libraries(ParticleSystem ${OPENGL_LIBRARIES})
 target_link_libraries(ParticleSystem ${OPENCL_LIBRARIES})
 

@@ -1,6 +1,5 @@
 #pragma once
 #include "camera.hpp"
-#include "clenv.hpp"
 #include "env.hpp"
 #include "part.hpp"
 #include "shader.hpp"

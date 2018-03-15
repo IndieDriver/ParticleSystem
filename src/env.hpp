@@ -1,11 +1,20 @@
 #pragma once
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glad/glad.h>
-// --
-#include <GLFW/glfw3.h>
 #include <array>
 #include <iostream>
 #include <sstream>
+#include <string>
+#include "part.hpp"
+
+#include <glad/glad.h>
+
+#include <OpenCL/cl.h>
+#include <OpenCL/cl_gl.h>
+
+#include <OpenGL/CGLCurrent.h>
+#include <OpenGL/CGLDevice.h>
+#include <CL/cl.hpp>
+
+#include <GLFW/glfw3.h>
 
 class InputHandler {
  public:
@@ -48,6 +57,27 @@ class Env {
   bool _fullscreen = false;
   int _window_width;
   int _window_height;
+};
+
+class CLenv {
+ public:
+  CLenv(std::string file_name);
+  void createBuffer(int num_particle);
+  void enqueueKernel(cl::Kernel kernel, cl_float4 cursor, int num_particle,
+                     float deltaTime);
+  cl::Device id;
+  cl::Context context;
+  cl::CommandQueue cmds;
+  cl::Program program;
+  cl::Kernel kinit;
+  cl::Kernel kernel;
+  GLuint pos_id;
+  GLuint col_id;
+  cl::Buffer buf_vel;
+  cl::BufferGL buf_pos;
+  cl::BufferGL buf_col;
+
+  bool loadProgram(std::string filename, cl::Device device);
 };
 
 void keyCallback(GLFWwindow *window, int key, int scancode, int action,
