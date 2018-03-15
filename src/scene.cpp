@@ -56,9 +56,10 @@ void Scene::initScene(const Env &env) {
 }
 
 void Scene::animate(const Env &env, float deltaTime) {
-  if (shouldUpdateCursorPos)
+  if (shouldUpdateCursorPos) {
     lastCursorPos = getCursorPosInWorldSpace(env.inputHandler.mousex,
                                              env.inputHandler.mousey);
+  }
   if (gravity)
     lastCursorPos.w = 0.0f;
   else
@@ -101,8 +102,7 @@ cl_float4 Scene::getCursorPosInWorldSpace(float mouse_x, float mouse_y) {
 
   float denom = glm::dot(planNormal, rayWorld);
   if (fabs(denom) > 1e-6) {
-    float t =
-        glm::dot(glm::normalize(planPos - _camera->pos), rayWorld) / denom;
+    float t = glm::dot(planPos - _camera->pos, rayWorld) / denom;
     if (t >= 1e-6) {
       cl_float4 result;
       result.s[0] = _camera->pos.x + rayWorld.x * t;
@@ -134,17 +134,8 @@ void Scene::update(Env &env) {
   if (env.inputHandler.keys[GLFW_KEY_F]) {
     env.inputHandler.keys[GLFW_KEY_F] = false;
     isFreeCam = !isFreeCam;
-    if (isFreeCam) {
-      env.inputHandler.keybrDisabled = false;
-      env.inputHandler.mouseDisabled = false;
-      shouldUpdateCursorPos = false;
-      glfwSetInputMode(env.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    } else {
-      env.inputHandler.keybrDisabled = true;
-      env.inputHandler.mouseDisabled = true;
-      shouldUpdateCursorPos = false;
-      glfwSetInputMode(env.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
+    env.setCursorLock(isFreeCam);
+    shouldUpdateCursorPos = false;
   }
   if (env.inputHandler.keys[GLFW_KEY_J]) {
     env.inputHandler.keys[GLFW_KEY_J] = false;

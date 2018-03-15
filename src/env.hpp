@@ -16,10 +16,13 @@
 
 #include <GLFW/glfw3.h>
 
+enum class mouseState { VIRTUAL, NORMAL, HIDDEN };
+
 class InputHandler {
  public:
   std::array<bool, 1024> keys = {{0}};
-  bool mouseDisabled = true;
+  bool mouselocked = false;
+  // bool mouseDisabled = true;
   bool keybrDisabled = true;
   float mousex;
   float mousey;
@@ -40,6 +43,7 @@ class Env {
   float getAbsoluteTime() const;
   float getFrame() const;
   float getFPS() const;
+  void setCursorLock(bool l);
   int width;
   int height;
   bool has_resized;

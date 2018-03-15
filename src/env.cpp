@@ -41,7 +41,7 @@ Env::Env(unsigned short width, unsigned short height)
   std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
   std::cout << "GLSL " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
 
-  inputHandler.mouseDisabled = false;
+  // inputHandler.mouseDisabled = false;
 
   setupWindow();
   setupContext();
@@ -89,7 +89,11 @@ void Env::setupWindowHint() {
 void Env::setupWindow() {
   if (window != nullptr) {
     glfwSetWindowUserPointer(window, &inputHandler);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    if (inputHandler.mouselocked) {
+      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    } else {
+      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
     glfwSetCursorPosCallback(window, mouseCallback);
     glfwSetKeyCallback(window, keyCallback);
     glfwSetMouseButtonCallback(window, mouseKeyCallback);
@@ -145,6 +149,15 @@ float Env::getAbsoluteTime() const { return (this->_absoluteTime); }
 float Env::getFrame() const { return (this->_frame); }
 
 float Env::getFPS() const { return (this->_fps); }
+
+void Env::setCursorLock(bool l) {
+  this->inputHandler.mouselocked = l;
+  if (inputHandler.mouselocked) {
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  } else {
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  }
+}
 
 void keyCallback(GLFWwindow *window, int key, int scancode, int action,
                  int mode) {
