@@ -41,8 +41,6 @@ Env::Env(unsigned short width, unsigned short height)
   std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
   std::cout << "GLSL " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
 
-  // inputHandler.mouseDisabled = false;
-
   setupWindow();
   setupContext();
 }
@@ -293,8 +291,8 @@ bool CLenv::loadProgram(std::string filename, cl::Device device) {
   try {
     program.build({device});
   } catch (cl::Error e) {
-    // cl_build_status status =
-    // program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(device);
+    cl_build_status status =
+        program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(device);
     std::string name = device.getInfo<CL_DEVICE_NAME>();
     std::string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
     std::cerr << "Build log for " << name << ":" << std::endl

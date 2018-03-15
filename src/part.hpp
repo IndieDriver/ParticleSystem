@@ -13,5 +13,3 @@
 #include <glm/gtx/transform.hpp>
 #include <iostream>
 #include <string>
-
-// --

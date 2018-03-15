@@ -15,7 +15,7 @@ Scene::Scene(CLenv *clenv, Camera *cam, unsigned int particle_nb)
   glEnableVertexAttribArray(0);
 }
 
-void Scene::draw(const Shader &shader) {
+void Scene::draw(const Env &env, const Shader &shader) {
   GLint mvpID = glGetUniformLocation(shader.id, "MVP");
   GLint cursorPosID = glGetUniformLocation(shader.id, "cursorPos");
   glm::mat4 model(1.0f);
@@ -25,18 +25,28 @@ void Scene::draw(const Shader &shader) {
   glUniformMatrix4fv(glGetUniformLocation(shader.id, "MVP"), 1, GL_FALSE,
                      glm::value_ptr(MVP));
   glUniform3fv(glGetUniformLocation(shader.id, "cursorPos"), 1,
-               &(lastCursorPos.x));
+               glm::value_ptr(last_cursor_pos));
+  glUniform1f(glGetUniformLocation(shader.id, "iTime"), env.getAbsoluteTime());
 
   glBindVertexArray(vao);
   glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(_num_particle));
 }
 
+inline cl_float4 vec4_to_clfloat4(glm::vec4 glm_vec) {
+  cl_float4 vec;
+  vec.x = glm_vec.x;
+  vec.y = glm_vec.y;
+  vec.z = glm_vec.z;
+  vec.w = glm_vec.w;
+  return (vec);
+}
+
 void Scene::initScene(const Env &env) {
   try {
-    if (shouldUpdateCursorPos) {
-      lastCursorPos = getCursorPosInWorldSpace(env);
+    if (tracking_cursor_pos) {
+      last_cursor_pos = getCursorPosInWorldSpace(env);
     }
-    lastCursorPos.w = static_cast<float>(_model);
+    last_cursor_pos.w = static_cast<float>(_model);
     _state = SceneState::Running;
     glFlush();
     glFinish();
@@ -44,7 +54,8 @@ void Scene::initScene(const Env &env) {
     std::vector<cl::Memory> cl_vbos;
     cl_vbos.push_back(_cl->buf_pos);
     _cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
-    _cl->enqueueKernel(_cl->kinit, lastCursorPos, _num_particle, 0.0f);
+    _cl->enqueueKernel(_cl->kinit, vec4_to_clfloat4(last_cursor_pos),
+                       _num_particle, 0.0f);
     status = _cl->cmds.finish();
     if (status < 0) printf("Error clfinish\n");
     _cl->cmds.enqueueReleaseGLObjects(&cl_vbos, NULL, NULL);
@@ -54,11 +65,11 @@ void Scene::initScene(const Env &env) {
 }
 
 void Scene::animate(const Env &env, float deltaTime) {
-  if (shouldUpdateCursorPos) {
-    lastCursorPos = getCursorPosInWorldSpace(env);
+  if (tracking_cursor_pos) {
+    last_cursor_pos = getCursorPosInWorldSpace(env);
   }
 
-  lastCursorPos.w = gravity ? 0.0f : -1.0f;
+  last_cursor_pos.w = gravity ? 0.0f : -1.0f;
   try {
     glFlush();
     glFinish();
@@ -66,7 +77,8 @@ void Scene::animate(const Env &env, float deltaTime) {
     std::vector<cl::Memory> cl_vbos;
     cl_vbos.push_back(_cl->buf_pos);
     status = _cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
-    _cl->enqueueKernel(_cl->kernel, lastCursorPos, _num_particle, deltaTime);
+    _cl->enqueueKernel(_cl->kernel, vec4_to_clfloat4(last_cursor_pos),
+                       _num_particle, deltaTime);
     status = _cl->cmds.finish();
     if (status < 0) printf("Error clfinish\n");
     _cl->cmds.enqueueReleaseGLObjects(&cl_vbos, NULL, NULL);
@@ -75,7 +87,7 @@ void Scene::animate(const Env &env, float deltaTime) {
   }
 }
 
-cl_float4 Scene::getCursorPosInWorldSpace(const Env &env) {
+glm::vec4 Scene::getCursorPosInWorldSpace(const Env &env) {
   float x = (2.0f * env.inputHandler.mousex) / env.width - 1.0f;
   float y = 1.0f - (2.0f * env.inputHandler.mousey) / env.height;
   glm::vec4 rayClip(x, y, -1.0f, 1.0f);
@@ -99,26 +111,10 @@ cl_float4 Scene::getCursorPosInWorldSpace(const Env &env) {
   if (fabs(denom) > 1e-6) {
     float t = glm::dot(planPos - _camera->pos, rayWorld) / denom;
     if (t >= 1e-6) {
-      cl_float4 result;
-      result.s[0] = _camera->pos.x + rayWorld.x * t;
-      result.s[1] = _camera->pos.y + rayWorld.y * t;
-      result.s[2] = _camera->pos.z + rayWorld.z * t;
-      result.s[3] = 1.0f;
-      return (result);
-    } else {
-      std::cout << "invalid t" << std::endl;
+      return (glm::vec4(_camera->pos + rayWorld * t, 1.0f));
     }
-  } else {
-    std::cout << "invalid dot" << std::endl;
   }
-
-  cl_float4 zero;
-  zero.s[0] = 0.0f;
-  zero.s[1] = 0.0f;
-  zero.s[2] = 0.0f;
-  zero.s[3] = 0.0f;
-
-  return (zero);
+  return (glm::vec4(0.0f));
 }
 
 void Scene::update(Env &env) {
@@ -128,9 +124,9 @@ void Scene::update(Env &env) {
   }
   if (env.inputHandler.keys[GLFW_KEY_F]) {
     env.inputHandler.keys[GLFW_KEY_F] = false;
-    isFreeCam = !isFreeCam;
-    env.setCursorLock(isFreeCam);
-    shouldUpdateCursorPos = false;
+    free_cam = !free_cam;
+    env.setCursorLock(free_cam);
+    tracking_cursor_pos = false;
   }
   if (env.inputHandler.keys[GLFW_KEY_J]) {
     env.inputHandler.keys[GLFW_KEY_J] = false;
@@ -146,11 +142,10 @@ void Scene::update(Env &env) {
     }
     gravity = false;
     _state = SceneState::Init;
-    // needInit = true;
   }
   if (env.inputHandler.keys[GLFW_KEY_G]) {
     env.inputHandler.keys[GLFW_KEY_G] = false;
-    shouldUpdateCursorPos = !shouldUpdateCursorPos;
+    tracking_cursor_pos = !tracking_cursor_pos;
   }
   if (_state == SceneState::Init) {
     initScene(env);

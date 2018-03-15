@@ -11,16 +11,13 @@ enum class SceneState { Init, Running };
 class Scene {
  public:
   GLuint vao;
-  bool isFreeCam = false;
-  bool gravity = false;
-  bool shouldUpdateCursorPos = true;
-  cl_float4 lastCursorPos;
+  glm::vec4 last_cursor_pos;
   Scene(CLenv *env, Camera *camera, unsigned int num_particle);
-  void draw(const Shader &shader);
+  void draw(const Env &env, const Shader &shader);
   void initScene(const Env &env);
   void animate(const Env &env, float deltaTime);
   void update(Env &env);
-  cl_float4 getCursorPosInWorldSpace(const Env &env);
+  glm::vec4 getCursorPosInWorldSpace(const Env &env);
 
  private:
   CLenv *_cl;
@@ -28,4 +25,7 @@ class Scene {
   unsigned int _num_particle;
   enum ModelType _model;
   enum SceneState _state;
+  bool gravity = false;
+  bool free_cam = false;
+  bool tracking_cursor_pos = true;
 };

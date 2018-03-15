@@ -3,7 +3,14 @@ uniform vec3 cursorPos;
 in vec3 pos;
 out vec4 frag_colour;
 
+uniform float iTime;
+
+vec3 palette(in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d){
+    return a + b * cos(6.28318 * (c * t + d));
+}
+
 void main () {
 	float dist = distance(cursorPos, pos);
-	frag_colour = vec4(pos.x, 1.0f - (1.0f / dist) + 0.2f, tan(pos.z), 1.0f);
+  vec3 color = palette(dist * 0.1, vec3(0.5, 0.5, 0.5), vec3(0.5, 0.5, 0.5), vec3(1.0, 1.0, 1.0), vec3(0.0, 0.10, 0.20));
+	frag_colour = vec4(color, 1.0f);
 }

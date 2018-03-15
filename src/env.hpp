@@ -20,7 +20,6 @@ class InputHandler {
  public:
   std::array<bool, 1024> keys = {{0}};
   bool mouselocked = false;
-  // bool mouseDisabled = true;
   bool keybrDisabled = true;
   float mousex;
   float mousey;

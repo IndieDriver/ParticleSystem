@@ -40,7 +40,7 @@ int main(int ac, char **av) {
     env.update();
     camera.update(env);
     scene.update(env);
-    scene.draw(shader);
+    scene.draw(env, shader);
     glfwSwapBuffers(env.window);
     if (env.inputHandler.keys[GLFW_KEY_ESCAPE]) {
       glfwSetWindowShouldClose(env.window, GLFW_TRUE);
