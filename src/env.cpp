@@ -262,7 +262,7 @@ void CLenv::createBuffer(int num_particle) {
     glGenBuffers(1, &vbo_pos);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_pos);
     glBufferData(GL_ARRAY_BUFFER, 4 * num_particle * sizeof(float), NULL,
-                 GL_STATIC_DRAW);
+                 GL_DYNAMIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     int status = 0;

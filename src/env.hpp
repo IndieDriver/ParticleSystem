@@ -74,7 +74,6 @@ class CLenv {
   cl::Program program;
   cl::Kernel kinit;
   cl::Kernel kernel;
-  // GLuint pos_id;
   cl::Buffer buf_vel;
   cl::BufferGL buf_pos;
   cl::BufferGL buf_col;
