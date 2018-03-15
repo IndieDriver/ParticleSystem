@@ -11,7 +11,7 @@ __kernel void clinit(float deltaTime, float4 cursor, __global float4 *lpos, __gl
   float4 pos = lpos[global_id];
   float4 vel = lvel[global_id];
 
-  if (cursor.w == -1.0f){
+  if (cursor.w == 0.0f){
     float radius = 1.0f;
     float x = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
     float y = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
