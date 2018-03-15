@@ -16,8 +16,6 @@
 
 #include <GLFW/glfw3.h>
 
-enum class mouseState { VIRTUAL, NORMAL, HIDDEN };
-
 class InputHandler {
  public:
   std::array<bool, 1024> keys = {{0}};

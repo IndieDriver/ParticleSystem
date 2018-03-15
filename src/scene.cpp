@@ -1,7 +1,10 @@
 #include "scene.hpp"
 
 Scene::Scene(CLenv *clenv, Camera *cam, unsigned int particle_nb)
-    : _cl(clenv), _camera(cam), _num_particle(particle_nb) {
+    : _cl(clenv),
+      _camera(cam),
+      _num_particle(particle_nb),
+      _model(ModelType::Sphere) {
   vao = 0;
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
@@ -31,15 +34,10 @@ void Scene::draw(const Shader &shader) {
 void Scene::initScene(const Env &env) {
   try {
     if (shouldUpdateCursorPos) {
-      lastCursorPos = getCursorPosInWorldSpace(env.inputHandler.mousex,
-                                               env.inputHandler.mousey);
+      lastCursorPos = getCursorPosInWorldSpace(env);
     }
-    if (sphere) {
-      lastCursorPos.w = -1.0f;
-    } else {
-      lastCursorPos.w = 0.0f;
-    }
-    needInit = false;
+    lastCursorPos.w = static_cast<float>(_model);
+    _state = SceneState::Running;
     glFlush();
     glFinish();
     int status = 0;
@@ -57,13 +55,10 @@ void Scene::initScene(const Env &env) {
 
 void Scene::animate(const Env &env, float deltaTime) {
   if (shouldUpdateCursorPos) {
-    lastCursorPos = getCursorPosInWorldSpace(env.inputHandler.mousex,
-                                             env.inputHandler.mousey);
+    lastCursorPos = getCursorPosInWorldSpace(env);
   }
-  if (gravity)
-    lastCursorPos.w = 0.0f;
-  else
-    lastCursorPos.w = -1.0f;
+
+  lastCursorPos.w = gravity ? 0.0f : -1.0f;
   try {
     glFlush();
     glFinish();
@@ -80,9 +75,9 @@ void Scene::animate(const Env &env, float deltaTime) {
   }
 }
 
-cl_float4 Scene::getCursorPosInWorldSpace(float mouse_x, float mouse_y) {
-  float x = (2.0f * mouse_x) / WIDTH - 1.0f;
-  float y = 1.0f - (2.0f * mouse_y) / HEIGHT;
+cl_float4 Scene::getCursorPosInWorldSpace(const Env &env) {
+  float x = (2.0f * env.inputHandler.mousex) / env.width - 1.0f;
+  float y = 1.0f - (2.0f * env.inputHandler.mousey) / env.height;
   glm::vec4 rayClip(x, y, -1.0f, 1.0f);
 
   glm::mat4 invProj = glm::inverse(_camera->proj);
@@ -139,15 +134,25 @@ void Scene::update(Env &env) {
   }
   if (env.inputHandler.keys[GLFW_KEY_J]) {
     env.inputHandler.keys[GLFW_KEY_J] = false;
-    sphere = !sphere;
+    switch (_model) {
+      case ModelType::Sphere:
+        _model = ModelType::Cube;
+        break;
+      case ModelType::Cube:
+        _model = ModelType::Sphere;
+        break;
+      default:
+        break;
+    }
     gravity = false;
-    needInit = true;
+    _state = SceneState::Init;
+    // needInit = true;
   }
   if (env.inputHandler.keys[GLFW_KEY_G]) {
     env.inputHandler.keys[GLFW_KEY_G] = false;
     shouldUpdateCursorPos = !shouldUpdateCursorPos;
   }
-  if (needInit) {
+  if (_state == SceneState::Init) {
     initScene(env);
   } else {
     animate(env, env.getDeltaTime());

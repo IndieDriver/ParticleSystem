@@ -1,10 +1,7 @@
 #pragma once
 #define __CL_ENABLE_EXCEPTIONS
 #define CL_HPP_ENABLE_EXCEPTIONS
-#define WIDTH 1280
-#define HEIGHT 720
 #define PARTICLE_NUM 1000000
-//#define M_PI 3.14159265358979323846
 #include <math.h>
 #include <cassert>
 #include <fstream>

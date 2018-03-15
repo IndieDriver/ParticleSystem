@@ -6,7 +6,7 @@
 
 int main(int ac, char **av) {
   unsigned int particle_count = 0;
-  Env env(WIDTH, HEIGHT);
+  Env env(1280, 720);
   GL_DUMP_ERROR("main");
   if (ac == 2) {
     try {
@@ -30,7 +30,7 @@ int main(int ac, char **av) {
   cl.createBuffer(particle_count);
 
   Camera camera(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f),
-                WIDTH, HEIGHT);
+                env.width, env.height);
 
   Scene scene(&cl, &camera, particle_count);
   GL_DUMP_ERROR("scene");
@@ -44,6 +44,10 @@ int main(int ac, char **av) {
     glfwSwapBuffers(env.window);
     if (env.inputHandler.keys[GLFW_KEY_ESCAPE]) {
       glfwSetWindowShouldClose(env.window, GLFW_TRUE);
+    }
+    if (env.inputHandler.keys[GLFW_KEY_Y]) {
+      env.inputHandler.keys[GLFW_KEY_Y] = false;
+      env.toggleFullscreen();
     }
   }
   glfwTerminate();
