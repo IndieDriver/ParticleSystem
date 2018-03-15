@@ -201,31 +201,7 @@ void CLenv::enqueueKernel(cl::Kernel k, cl_float4 cursorpos, int num_particle,
   }
 }
 
-void CLenv::createBuffer(int num_particle) {
-  try {
-    glGenBuffers(1, &pos_id);
-    glBindBuffer(GL_ARRAY_BUFFER, pos_id);
-    glBufferData(GL_ARRAY_BUFFER, 4 * num_particle * sizeof(float), NULL,
-                 GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    int status = 0;
-
-    buf_vel =
-        cl::Buffer(this->context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
-                   4 * sizeof(float) * num_particle, NULL, &status);
-
-    if (status < 0) std::cout << status << "buffer error\n";
-    // status = cmds.enqueueWriteBuffer(buf_vel, CL_TRUE, 0, 4 * sizeof(float) *
-    // num_particle, NULL);
-    if (status < 0) std::cout << status << "enqueue error\n";
-    buf_pos = cl::BufferGL(this->context, CL_MEM_READ_WRITE, pos_id);
-  } catch (cl::Error e) {
-    std::cout << std::endl << e.what() << " : Error " << e.err() << std::endl;
-  }
-}
-
-CLenv::CLenv(std::string kernelFileName) {
+CLenv::CLenv(std::string kernelFileName) : vbo_pos(0) {
   try {
     std::vector<cl::Platform> all_platforms;
     cl::Platform::get(&all_platforms);
@@ -273,6 +249,35 @@ CLenv::CLenv(std::string kernelFileName) {
     }
   } catch (cl::Error e) {
     std::cout << std::endl << e.what() << " : " << e.err() << std::endl;
+  }
+}
+
+CLenv::~CLenv() {
+  if (vbo_pos != 0) {
+    glDeleteBuffers(1, &this->vbo_pos);
+  }
+}
+void CLenv::createBuffer(int num_particle) {
+  try {
+    glGenBuffers(1, &vbo_pos);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_pos);
+    glBufferData(GL_ARRAY_BUFFER, 4 * num_particle * sizeof(float), NULL,
+                 GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    int status = 0;
+
+    buf_vel =
+        cl::Buffer(this->context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
+                   4 * sizeof(float) * num_particle, NULL, &status);
+
+    if (status < 0) std::cout << status << "buffer error\n";
+    // status = cmds.enqueueWriteBuffer(buf_vel, CL_TRUE, 0, 4 * sizeof(float) *
+    // num_particle, NULL);
+    if (status < 0) std::cout << status << "enqueue error\n";
+    buf_pos = cl::BufferGL(this->context, CL_MEM_READ_WRITE, vbo_pos);
+  } catch (cl::Error e) {
+    std::cout << std::endl << e.what() << " : Error " << e.err() << std::endl;
   }
 }
 

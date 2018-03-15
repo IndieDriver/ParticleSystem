@@ -13,6 +13,7 @@ class Scene {
   GLuint vao;
   glm::vec4 last_cursor_pos;
   Scene(CLenv *env, Camera *camera, unsigned int num_particle);
+  ~Scene();
   void draw(const Env &env, const Shader &shader);
   void initScene(const Env &env);
   void animate(const Env &env, float deltaTime);

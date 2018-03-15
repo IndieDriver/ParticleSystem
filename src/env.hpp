@@ -63,17 +63,18 @@ class Env {
 class CLenv {
  public:
   CLenv(std::string file_name);
+  ~CLenv();
   void createBuffer(int num_particle);
   void enqueueKernel(cl::Kernel kernel, cl_float4 cursor, int num_particle,
                      float deltaTime);
+  GLuint vbo_pos;
   cl::Device id;
   cl::Context context;
   cl::CommandQueue cmds;
   cl::Program program;
   cl::Kernel kinit;
   cl::Kernel kernel;
-  GLuint pos_id;
-  GLuint col_id;
+  // GLuint pos_id;
   cl::Buffer buf_vel;
   cl::BufferGL buf_pos;
   cl::BufferGL buf_col;

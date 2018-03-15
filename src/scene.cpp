@@ -1,18 +1,24 @@
 #include "scene.hpp"
 
 Scene::Scene(CLenv *clenv, Camera *cam, unsigned int particle_nb)
-    : _cl(clenv),
+    : vao(0),
+      _cl(clenv),
       _camera(cam),
       _num_particle(particle_nb),
       _model(ModelType::Sphere) {
-  vao = 0;
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
 
-  glBindBuffer(GL_ARRAY_BUFFER, _cl->pos_id);
+  glBindBuffer(GL_ARRAY_BUFFER, _cl->vbo_pos);
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
   glEnableVertexAttribArray(0);
+}
+
+Scene::~Scene() {
+  if (this->vao != 0) {
+    glDeleteVertexArrays(1, &this->vao);
+  }
 }
 
 void Scene::draw(const Env &env, const Shader &shader) {
