@@ -1,4 +1,4 @@
-#include "Scene.h"
+#include "scene.hpp"
 
 Scene::Scene(CLenv *clenv, Camera *cam, unsigned int particle_nb)
     : _cl(clenv), _camera(cam), _num_particle(particle_nb) {
@@ -25,7 +25,7 @@ void Scene::draw(const Shader &shader) {
                &(lastCursorPos.x));
 
   glBindVertexArray(vao);
-  glDrawArrays(GL_POINTS, 0, _num_particle);
+  glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(_num_particle));
 }
 
 void Scene::initScene(const Env &env) {

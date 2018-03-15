@@ -1,13 +1,14 @@
-#include "CLenv.h"
-#include "Scene.h"
-#include "Shader.h"
 #include "camera.hpp"
+#include "clenv.hpp"
 #include "env.hpp"
-#include "part.h"
+#include "part.hpp"
+#include "scene.hpp"
+#include "shader.hpp"
 
 int main(int ac, char **av) {
   unsigned int particle_count = 0;
   Env env(WIDTH, HEIGHT);
+  GL_DUMP_ERROR("main");
   if (ac == 2) {
     try {
       particle_count = std::stoi(av[1]);
@@ -24,10 +25,8 @@ int main(int ac, char **av) {
     std::cout << "[Warning] Invalid number of particle, using default number"
               << std::endl;
   }
-  Shader shader("shaders/part.fs.glsl", "shaders/part.vs.glsl");
-  glEnable(GL_DEBUG_OUTPUT);
-  glEnable(GL_DEPTH_TEST);
-  glDepthFunc(GL_LESS);
+  Shader shader("shaders/part.frag", "shaders/part.vert");
+  GL_DUMP_ERROR("shader");
 
   CLenv cl("shaders/kernel.cl");
   cl.createBuffer(particle_count);
@@ -36,16 +35,17 @@ int main(int ac, char **av) {
                 WIDTH, HEIGHT);
 
   Scene scene(&cl, &camera, particle_count);
+  GL_DUMP_ERROR("scene");
 
   while (!glfwWindowShouldClose(env.window)) {
+    glfwPollEvents();
+    env.update();
+    camera.update(env);
     scene.update(env);
     scene.draw(shader);
-    env.update();
     glfwSwapBuffers(env.window);
-    glfwPollEvents();
-    camera.update(env);
-    if (glfwGetKey(env.window, GLFW_KEY_ESCAPE)) {
-      glfwSetWindowShouldClose(env.window, 1);
+    if (env.inputHandler.keys[GLFW_KEY_ESCAPE]) {
+      glfwSetWindowShouldClose(env.window, GLFW_TRUE);
     }
   }
   glfwTerminate();

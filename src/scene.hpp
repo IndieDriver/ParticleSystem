@@ -1,9 +1,9 @@
 #pragma once
-#include "CLenv.h"
-#include "Shader.h"
 #include "camera.hpp"
+#include "clenv.hpp"
 #include "env.hpp"
-#include "part.h"
+#include "part.hpp"
+#include "shader.hpp"
 
 class Scene {
  public:
