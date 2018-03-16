@@ -18,9 +18,6 @@ void main () {
   float dist = distance(cursorPos, gs_data.pos);
   vec3 color = palette(dist * 0.1, vec3(0.5, 0.5, 0.5), vec3(0.5, 0.5, 0.5), vec3(1.0, 1.0, 1.0), vec3(0.0, 0.10, 0.20));
   vec4 tex_color = texture(sampler_tex, gs_data.uv);
-  if (tex_color.a < 0.1) {
-    discard;
-  }
   frag_colour.rgb = color * 0.4 + tex_color.rgb * 0.6;
   frag_colour.a = tex_color.a;
 }

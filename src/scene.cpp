@@ -37,6 +37,7 @@ Scene::~Scene() {
   }
   delete _shader;
   delete _billboard_shader;
+  delete _billboard_texture;
 }
 
 void Scene::draw(const Env &env) {
@@ -220,18 +221,15 @@ void Scene::update(Env &env) {
     _emit_buffers.emplace(env.getAbsoluteTime(), buffer);
     emit(buffer, env);
   }
-  if (env.inputHandler.keys[GLFW_KEY_J]) {
-    env.inputHandler.keys[GLFW_KEY_J] = false;
-    switch (_model) {
-      case ModelType::Sphere:
-        _model = ModelType::Cube;
-        break;
-      case ModelType::Cube:
-        _model = ModelType::Sphere;
-        break;
-      default:
-        break;
-    }
+  if (env.inputHandler.keys[GLFW_KEY_1]) {
+    env.inputHandler.keys[GLFW_KEY_1] = false;
+    _model = ModelType::Sphere;
+    gravity = false;
+    _state = SceneState::Init;
+  }
+  if (env.inputHandler.keys[GLFW_KEY_2]) {
+    env.inputHandler.keys[GLFW_KEY_2] = false;
+    _model = ModelType::Cube;
     gravity = false;
     _state = SceneState::Init;
   }

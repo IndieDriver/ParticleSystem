@@ -6,7 +6,7 @@ float rand(unsigned int* seed) {
 
 __kernel void clinit(float deltaTime, float4 cursor, __global float4 *lpos, __global float4 *lvel) {
   int global_id = get_global_id(0);
-  unsigned int seed = (unsigned int)global_id;
+  unsigned int seed = (unsigned int)global_id * 1000;
   float4 pos = lpos[global_id];
 
   if (cursor.w == 0.0f) {
