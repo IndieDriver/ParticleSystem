@@ -1,70 +1,47 @@
-float get_random_0_1_ul(unsigned int* seed)
-{
+// generate float in 0-1 range
+float rand(unsigned int* seed) {
   *seed = ((*seed) * 16807 ) % 2147483647;
   return  (float)(*seed) * 4.6566129e-10;
 }
 
-__kernel void clinit(float deltaTime, float4 cursor, __global float4 *lpos, __global float4 *lvel)
-{
+__kernel void clinit(float deltaTime, float4 cursor, __global float4 *lpos, __global float4 *lvel) {
   int global_id = get_global_id(0);
   unsigned int seed = (unsigned int)global_id;
   float4 pos = lpos[global_id];
-  float4 vel = lvel[global_id];
 
-  if (cursor.w == 0.0f){
-    float radius = 1.0f;
-    float x = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
-    float y = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
-    float z = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
+  if (cursor.w == 0.0f) {
+    // Sphere init
+    float phi = rand(&seed) * (2.0f * M_PI);
+    float costheta = (rand(&seed) * 2.0f) - 1.0f;
+    float u = rand(&seed);
 
-    int iter_max = 10;
-    while ((x * x) + (y * y) + (z * z) > (radius * radius) && iter_max > -1){
-      x = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
-      y = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
-      z = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
-      iter_max = iter_max - 1;
-    }
-    pos.x = x;
-    pos.y = y;
-    pos.z = z;
+    float theta = acos(costheta);
+    float r = 1.0f * cbrt(u);
+
+    pos.x = r * sin(theta) * cos(phi);
+    pos.y = r * sin(theta) * sin(phi);
+    pos.z = r * cos(theta);
   } else {
-    float radius = 6.0f;
-    float x = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
-    float y = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
-    float z = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
-
-    int iter_max = 10;
-    while ((x * x) + (y * y) + (z * z) > (radius * radius) && iter_max > -1){
-      x = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
-      y = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
-      z = ((float)get_random_0_1_ul(&seed) * 2.0f) - 1.0f;
-      iter_max = iter_max - 1;
-    }
-    pos.x = x;
-    pos.y = y;
-    pos.z = z;
+    // Cube init
+    pos.x = rand(&seed);
+    pos.y = rand(&seed);
+    pos.z = rand(&seed);
+    pos = (pos * 2.0f) - 1.0f;
   }
 
   pos.w = 0.0f;
-  vel.x = 0.0f;
-  vel.y = 0.0f;
-  vel.z = 0.0f;
-  vel.w = 0.0f;
   lpos[global_id] = pos;
-  lvel[global_id] = vel;
+  lvel[global_id] = (float4)(0.0f);
 }
 
-__kernel void clpart(float deltaTime, float4 cursor, __global float4 *lpos, __global float4 *lvel)
-{
+__kernel void clpart(float deltaTime, float4 cursor, __global float4 *lpos, __global float4 *lvel) {
   int global_id = get_global_id(0);
   float4 pos = lpos[global_id];
   float4 vel = lvel[global_id];
 
   if (cursor.w != -1.0f) {
-    float m = 1.0f;
     pos.w = 0.0f;
-    float4 force = cursor - pos;
-    force = normalize(force);
+    float4 force = normalize(cursor - pos);
     vel += force * deltaTime;
     pos += vel;
   }

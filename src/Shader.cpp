@@ -38,11 +38,17 @@ Shader::Shader(std::string shader1, std::string shader2, std::string shader3)
 }
 
 GLuint Shader::loadShader(std::string shader_filename) {
-  int shader_type = 0;
+  if (shader_filename.empty())  {
+    return (0);
+  }
+  int shader_type = -1;
   for (int i = 0; i < 3; i++) {
     if (shader_filename.find(shader_extensions[i]) != std::string::npos) {
       shader_type = shader_types[i];
     }
+  }
+  if (shader_type == -1) {
+    std::cerr << "Invalid shader extensions" << std::endl;
   }
   GLuint shader_id = compileShader(getShaderSource(shader_filename),
                                    shader_filename, shader_type);
