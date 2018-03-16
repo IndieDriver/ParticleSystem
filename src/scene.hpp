@@ -1,4 +1,5 @@
 #pragma once
+#include <unordered_map>
 #include "camera.hpp"
 #include "env.hpp"
 #include "part.hpp"
@@ -24,7 +25,7 @@ class Scene {
   CLenv *_cl;
   Camera *_camera;
   Cglbuffer _main_buffers;
-  std::vector<Cglbuffer> _emit_buffers;
+  std::unordered_map<float, Cglbuffer> _emit_buffers;
   unsigned int _num_particle;
   enum ModelType _model;
   enum SceneState _state;

@@ -45,8 +45,8 @@ void Scene::draw(const Env &env, const Shader &shader) {
   glDrawArrays(GL_POINTS, 0, _main_buffers.size);
 
   for (const auto &buffer : _emit_buffers) {
-    glBindVertexArray(buffer.vao);
-    glDrawArrays(GL_POINTS, 0, buffer.size);
+    glBindVertexArray(buffer.second.vao);
+    glDrawArrays(GL_POINTS, 0, buffer.second.size);
   }
 }
 
@@ -184,7 +184,7 @@ void Scene::update(Env &env) {
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
     glEnableVertexAttribArray(0);
-    _emit_buffers.push_back(buffer);
+    _emit_buffers.emplace(env.getAbsoluteTime(), buffer);
     emit(buffer, env);
   }
   if (env.inputHandler.keys[GLFW_KEY_J]) {
@@ -206,12 +206,20 @@ void Scene::update(Env &env) {
     env.inputHandler.keys[GLFW_KEY_G] = false;
     tracking_cursor_pos = !tracking_cursor_pos;
   }
+  float current_time = env.getAbsoluteTime();
+  for (auto it = _emit_buffers.begin(); it != _emit_buffers.end();) {
+    if (current_time - it->first > 10.0f) {
+      it = _emit_buffers.erase(it);
+    } else {
+      ++it;
+    }
+  }
   if (_state == SceneState::Init) {
     initScene(_main_buffers, env);
   } else {
     animate(_main_buffers, env);
   }
   for (const auto &buffer : _emit_buffers) {
-    animate(buffer, env);
+    animate(buffer.second, env);
   }
 }
