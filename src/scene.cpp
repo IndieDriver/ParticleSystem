@@ -9,6 +9,11 @@ Scene::Scene(CLenv *clenv, Camera *cam, unsigned int particle_nb)
   _billboard_shader =
       new Shader("shaders/bill_part.frag", "shaders/bill_part.vert",
                  "shaders/bill_part.geom");
+  try {
+    _billboard_texture = new Texture("textures/cloud2.png");
+  } catch (std::exception &e) {
+    std::cerr << e.what() << std::endl;
+  }
   GLuint vao;
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
@@ -35,7 +40,20 @@ Scene::~Scene() {
 }
 
 void Scene::draw(const Env &env) {
-  Shader *shader = _billboard_shader;
+  Shader *shader = nullptr;
+  switch (_shader_type) {
+    case ShaderType::Normal:
+      shader = _shader;
+      break;
+    case ShaderType::Billboard:
+      shader = _billboard_shader;
+      break;
+    default:
+      break;
+  }
+  if (shader == nullptr) {
+    return;
+  }
   GLint mvpID = glGetUniformLocation(shader->id, "MVP");
   GLint cursorPosID = glGetUniformLocation(shader->id, "cursorPos");
   glm::mat4 model(1.0f);
@@ -47,6 +65,10 @@ void Scene::draw(const Env &env) {
   glUniform3fv(glGetUniformLocation(shader->id, "cursorPos"), 1,
                glm::value_ptr(last_cursor_pos));
   glUniform1f(glGetUniformLocation(shader->id, "iTime"), env.getAbsoluteTime());
+  if (_shader_type == ShaderType::Billboard && _billboard_texture != nullptr) {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, _billboard_texture->id);
+  }
 
   glBindVertexArray(_main_buffers.vao);
   glDrawArrays(GL_POINTS, 0, _main_buffers.size);
@@ -220,6 +242,19 @@ void Scene::update(Env &env) {
   if (env.inputHandler.keys[GLFW_KEY_I]) {
     env.inputHandler.keys[GLFW_KEY_I] = false;
     debug_mode = !debug_mode;
+  }
+  if (env.inputHandler.keys[GLFW_KEY_Q]) {
+    env.inputHandler.keys[GLFW_KEY_Q] = false;
+    switch (_shader_type) {
+      case ShaderType::Normal:
+        _shader_type = ShaderType::Billboard;
+        break;
+      case ShaderType::Billboard:
+        _shader_type = ShaderType::Normal;
+        break;
+      default:
+        break;
+    }
   }
   float current_time = env.getAbsoluteTime();
   for (auto it = _emit_buffers.begin(); it != _emit_buffers.end();) {

@@ -11,6 +11,8 @@ enum class ModelType { Sphere, Cube };
 
 enum class SceneState { Init, Running };
 
+enum class ShaderType { Normal, Billboard };
+
 class Scene {
  public:
   glm::vec4 last_cursor_pos;
@@ -29,12 +31,14 @@ class Scene {
   Camera *_camera;
   Shader *_shader;
   Shader *_billboard_shader;
+  Texture *_billboard_texture = nullptr;
   Cglbuffer _main_buffers;
   Renderer _renderer;
   std::unordered_map<float, Cglbuffer> _emit_buffers;
   unsigned int _num_particle;
   enum ModelType _model;
   enum SceneState _state;
+  enum ShaderType _shader_type;
   bool gravity = false;
   bool free_cam = false;
   bool tracking_cursor_pos = true;
