@@ -1,8 +1,10 @@
 #pragma once
+#include <iomanip>
 #include <unordered_map>
 #include "camera.hpp"
 #include "env.hpp"
 #include "part.hpp"
+#include "renderer.hpp"
 #include "shader.hpp"
 
 enum class ModelType { Sphere, Cube };
@@ -22,9 +24,11 @@ class Scene {
   glm::vec4 getCursorPosInWorldSpace(const Env &env);
 
  private:
+  void print_debug_info(const Env &env);
   CLenv *_cl;
   Camera *_camera;
   Cglbuffer _main_buffers;
+  Renderer _renderer;
   std::unordered_map<float, Cglbuffer> _emit_buffers;
   unsigned int _num_particle;
   enum ModelType _model;
@@ -32,4 +36,5 @@ class Scene {
   bool gravity = false;
   bool free_cam = false;
   bool tracking_cursor_pos = true;
+  bool debug_mode = false;
 };

@@ -48,6 +48,9 @@ void Scene::draw(const Env &env, const Shader &shader) {
     glBindVertexArray(buffer.second.vao);
     glDrawArrays(GL_POINTS, 0, buffer.second.size);
   }
+  if (debug_mode) {
+    print_debug_info(env);
+  }
 }
 
 inline cl_float4 vec4_to_clfloat4(glm::vec4 glm_vec) {
@@ -159,6 +162,7 @@ glm::vec4 Scene::getCursorPosInWorldSpace(const Env &env) {
 }
 
 void Scene::update(Env &env) {
+  _renderer.update(env);
   if (env.inputHandler.keys[GLFW_KEY_SPACE]) {
     env.inputHandler.keys[GLFW_KEY_SPACE] = false;
     gravity = !gravity;
@@ -206,6 +210,10 @@ void Scene::update(Env &env) {
     env.inputHandler.keys[GLFW_KEY_G] = false;
     tracking_cursor_pos = !tracking_cursor_pos;
   }
+  if (env.inputHandler.keys[GLFW_KEY_I]) {
+    env.inputHandler.keys[GLFW_KEY_I] = false;
+    debug_mode = !debug_mode;
+  }
   float current_time = env.getAbsoluteTime();
   for (auto it = _emit_buffers.begin(); it != _emit_buffers.end();) {
     if (current_time - it->first > 10.0f) {
@@ -222,4 +230,34 @@ void Scene::update(Env &env) {
   for (const auto &buffer : _emit_buffers) {
     animate(buffer.second, env);
   }
+}
+
+std::string float_to_string(float f, int prec) {
+  std::ostringstream out;
+  out << std::setprecision(prec) << std::fixed << f;
+  return out.str();
+}
+
+void Scene::print_debug_info(const Env &env) {
+  float fheight = static_cast<float>(_renderer.getScreenHeight());
+  float fwidth = static_cast<float>(_renderer.getScreenWidth());
+  size_t particle_count = _main_buffers.size;
+  for (const auto &buffer : _emit_buffers) {
+    particle_count += buffer.second.size;
+  }
+  _renderer.renderText(10.0f, fheight - 25.0f, 0.35f,
+                       "x: " + float_to_string(_camera->pos.x, 2) +
+                           " y: " + float_to_string(_camera->pos.y, 2) +
+                           " z: " + float_to_string(_camera->pos.z, 2),
+                       glm::vec3(1.0f, 1.0f, 1.0f));
+  _renderer.renderText(
+      10.0f, fheight - 50.0f, 0.35f,
+      "vel: " + float_to_string(_camera->velocity, 2) + " m/s ",
+      glm::vec3(1.0f, 1.0f, 1.0f));
+  _renderer.renderText(10.0f, fheight - 75.0f, 0.35f,
+                       std::to_string(particle_count) + " particles",
+                       glm::vec3(1.0f, 1.0f, 1.0f));
+  _renderer.renderText(fwidth - 130.0f, fheight - 25.0f, 0.35f,
+                       float_to_string(env.getFPS(), 2) + " fps",
+                       glm::vec3(1.0f, 1.0f, 1.0f));
 }

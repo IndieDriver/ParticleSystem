@@ -12,6 +12,7 @@ add_subdirectory(third-party/glfw)
 include_directories(third-party/glfw/include)
 include_directories(third-party/glad)
 include_directories(third-party/glm)
+include_directories(third-party/stb)
 include_directories(third-party)
 
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -26,7 +27,10 @@ set(SOURCE_FILES
         src/env.cpp
         src/shader.cpp
         src/camera.cpp
-        src/scene.cpp)
+        src/scene.cpp
+        src/renderer.cpp
+        src/texture.cpp
+        )
 add_executable(ParticleSystem ${SOURCE_FILES})
 
 target_link_libraries(ParticleSystem glfw ${GLFW_LIBRARIES})
