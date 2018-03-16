@@ -11,6 +11,7 @@ Scene::Scene(CLenv *clenv, Camera *cam, unsigned int particle_nb)
 
   _main_buffers = _cl->createGLBuffer(particle_nb * 4 * sizeof(float));
   _main_buffers.vao = vao;
+  _main_buffers.size = particle_nb;
 
   glBindBuffer(GL_ARRAY_BUFFER, _main_buffers.vbo);
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
@@ -41,7 +42,12 @@ void Scene::draw(const Env &env, const Shader &shader) {
   glUniform1f(glGetUniformLocation(shader.id, "iTime"), env.getAbsoluteTime());
 
   glBindVertexArray(_main_buffers.vao);
-  glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(_num_particle));
+  glDrawArrays(GL_POINTS, 0, _main_buffers.size);
+
+  for (const auto &buffer : _emit_buffers) {
+    glBindVertexArray(buffer.vao);
+    glDrawArrays(GL_POINTS, 0, buffer.size);
+  }
 }
 
 inline cl_float4 vec4_to_clfloat4(glm::vec4 glm_vec) {
@@ -53,7 +59,7 @@ inline cl_float4 vec4_to_clfloat4(glm::vec4 glm_vec) {
   return (vec);
 }
 
-void Scene::initScene(const Env &env) {
+void Scene::initScene(const Cglbuffer &buffer, const Env &env) {
   try {
     if (tracking_cursor_pos) {
       last_cursor_pos = getCursorPosInWorldSpace(env);
@@ -64,10 +70,10 @@ void Scene::initScene(const Env &env) {
     glFinish();
     int status = 0;
     std::vector<cl::Memory> cl_vbos;
-    cl_vbos.push_back(_main_buffers.position);
+    cl_vbos.push_back(buffer.position);
     _cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
-    _cl->enqueueKernel(_cl->kinit, _main_buffers,
-                       vec4_to_clfloat4(last_cursor_pos), _num_particle, 0.0f);
+    _cl->enqueueKernel(_cl->kinit, buffer, vec4_to_clfloat4(last_cursor_pos),
+                       buffer.size, 0.0f);
     status = _cl->cmds.finish();
     if (status < 0) printf("Error clfinish\n");
     _cl->cmds.enqueueReleaseGLObjects(&cl_vbos, NULL, NULL);
@@ -76,7 +82,7 @@ void Scene::initScene(const Env &env) {
   }
 }
 
-void Scene::animate(const Env &env, float deltaTime) {
+void Scene::animate(const Cglbuffer &buffer, const Env &env) {
   if (tracking_cursor_pos) {
     last_cursor_pos = getCursorPosInWorldSpace(env);
   }
@@ -87,11 +93,33 @@ void Scene::animate(const Env &env, float deltaTime) {
     glFinish();
     int status = 0;
     std::vector<cl::Memory> cl_vbos;
-    cl_vbos.push_back(_main_buffers.position);
+    cl_vbos.push_back(buffer.position);
     status = _cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
-    _cl->enqueueKernel(_cl->kernel, _main_buffers,
-                       vec4_to_clfloat4(last_cursor_pos), _num_particle,
-                       deltaTime);
+    _cl->enqueueKernel(_cl->kernel, buffer, vec4_to_clfloat4(last_cursor_pos),
+                       buffer.size, env.getDeltaTime());
+    status = _cl->cmds.finish();
+    if (status < 0) printf("Error clfinish\n");
+    _cl->cmds.enqueueReleaseGLObjects(&cl_vbos, NULL, NULL);
+  } catch (cl::Error e) {
+    std::cout << std::endl << e.what() << " : Error " << e.err() << std::endl;
+  }
+}
+
+void Scene::emit(const Cglbuffer &buffer, const Env &env) {
+  if (tracking_cursor_pos) {
+    last_cursor_pos = getCursorPosInWorldSpace(env);
+  }
+
+  last_cursor_pos.w = gravity ? 0.0f : -1.0f;
+  try {
+    glFlush();
+    glFinish();
+    int status = 0;
+    std::vector<cl::Memory> cl_vbos;
+    cl_vbos.push_back(buffer.position);
+    status = _cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
+    _cl->enqueueKernel(_cl->kemit, buffer, vec4_to_clfloat4(last_cursor_pos),
+                       buffer.size, env.getDeltaTime());
     status = _cl->cmds.finish();
     if (status < 0) printf("Error clfinish\n");
     _cl->cmds.enqueueReleaseGLObjects(&cl_vbos, NULL, NULL);
@@ -141,6 +169,24 @@ void Scene::update(Env &env) {
     env.setCursorLock(free_cam);
     tracking_cursor_pos = false;
   }
+  if (env.inputHandler.keys[GLFW_KEY_E]) {
+    env.inputHandler.keys[GLFW_KEY_E] = false;
+    Cglbuffer buffer;
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    buffer = _cl->createGLBuffer(EMIT_PARTICLE * 4 * sizeof(float));
+    buffer.vao = vao;
+    buffer.size = EMIT_PARTICLE;
+
+    glBindBuffer(GL_ARRAY_BUFFER, buffer.vbo);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
+
+    glEnableVertexAttribArray(0);
+    _emit_buffers.push_back(buffer);
+    emit(buffer, env);
+  }
   if (env.inputHandler.keys[GLFW_KEY_J]) {
     env.inputHandler.keys[GLFW_KEY_J] = false;
     switch (_model) {
@@ -161,8 +207,11 @@ void Scene::update(Env &env) {
     tracking_cursor_pos = !tracking_cursor_pos;
   }
   if (_state == SceneState::Init) {
-    initScene(env);
+    initScene(_main_buffers, env);
   } else {
-    animate(env, env.getDeltaTime());
+    animate(_main_buffers, env);
+  }
+  for (const auto &buffer : _emit_buffers) {
+    animate(buffer, env);
   }
 }

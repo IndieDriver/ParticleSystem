@@ -14,8 +14,9 @@ class Scene {
   Scene(CLenv *env, Camera *camera, unsigned int num_particle);
   ~Scene();
   void draw(const Env &env, const Shader &shader);
-  void initScene(const Env &env);
-  void animate(const Env &env, float deltaTime);
+  void initScene(const Cglbuffer &buffer, const Env &env);
+  void animate(const Cglbuffer &buffer, const Env &env);
+  void emit(const Cglbuffer &buffer, const Env &env);
   void update(Env &env);
   glm::vec4 getCursorPosInWorldSpace(const Env &env);
 
@@ -23,6 +24,7 @@ class Scene {
   CLenv *_cl;
   Camera *_camera;
   Cglbuffer _main_buffers;
+  std::vector<Cglbuffer> _emit_buffers;
   unsigned int _num_particle;
   enum ModelType _model;
   enum SceneState _state;

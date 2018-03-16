@@ -25,7 +25,6 @@ int main(int ac, char **av) {
               << std::endl;
   }
   Shader shader("shaders/part.frag", "shaders/part.vert");
-
   CLenv cl("shaders/kernel.cl");
 
   Camera camera(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f),

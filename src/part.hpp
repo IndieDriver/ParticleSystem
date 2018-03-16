@@ -2,6 +2,7 @@
 #define __CL_ENABLE_EXCEPTIONS
 #define CL_HPP_ENABLE_EXCEPTIONS
 #define PARTICLE_NUM 1000000
+#define EMIT_PARTICLE 1000
 #include <math.h>
 #include <cassert>
 #include <fstream>

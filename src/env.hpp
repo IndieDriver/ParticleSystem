@@ -65,6 +65,7 @@ struct Cglbuffer {
   GLuint vbo;
   cl::BufferGL position;
   cl::Buffer velocity;
+  size_t size;
 };
 
 class CLenv {
