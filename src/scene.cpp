@@ -5,6 +5,10 @@ Scene::Scene(CLenv *clenv, Camera *cam, unsigned int particle_nb)
       _camera(cam),
       _num_particle(particle_nb),
       _model(ModelType::Sphere) {
+  _shader = new Shader("shaders/part.frag", "shaders/part.vert");
+  _billboard_shader =
+      new Shader("shaders/bill_part.frag", "shaders/bill_part.vert",
+                 "shaders/bill_part.geom");
   GLuint vao;
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
@@ -26,20 +30,23 @@ Scene::~Scene() {
   if (_main_buffers.vao != 0) {
     glDeleteVertexArrays(1, &_main_buffers.vao);
   }
+  delete _shader;
+  delete _billboard_shader;
 }
 
-void Scene::draw(const Env &env, const Shader &shader) {
-  GLint mvpID = glGetUniformLocation(shader.id, "MVP");
-  GLint cursorPosID = glGetUniformLocation(shader.id, "cursorPos");
+void Scene::draw(const Env &env) {
+  Shader *shader = _billboard_shader;
+  GLint mvpID = glGetUniformLocation(shader->id, "MVP");
+  GLint cursorPosID = glGetUniformLocation(shader->id, "cursorPos");
   glm::mat4 model(1.0f);
   glm::mat4 MVP = _camera->proj * _camera->view * model;
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  shader.use();
-  glUniformMatrix4fv(glGetUniformLocation(shader.id, "MVP"), 1, GL_FALSE,
+  shader->use();
+  glUniformMatrix4fv(glGetUniformLocation(shader->id, "MVP"), 1, GL_FALSE,
                      glm::value_ptr(MVP));
-  glUniform3fv(glGetUniformLocation(shader.id, "cursorPos"), 1,
+  glUniform3fv(glGetUniformLocation(shader->id, "cursorPos"), 1,
                glm::value_ptr(last_cursor_pos));
-  glUniform1f(glGetUniformLocation(shader.id, "iTime"), env.getAbsoluteTime());
+  glUniform1f(glGetUniformLocation(shader->id, "iTime"), env.getAbsoluteTime());
 
   glBindVertexArray(_main_buffers.vao);
   glDrawArrays(GL_POINTS, 0, _main_buffers.size);

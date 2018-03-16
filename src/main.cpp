@@ -2,7 +2,6 @@
 #include "env.hpp"
 #include "part.hpp"
 #include "scene.hpp"
-#include "shader.hpp"
 
 int main(int ac, char **av) {
   unsigned int particle_count = 0;
@@ -24,7 +23,6 @@ int main(int ac, char **av) {
     std::cout << "[Warning] Invalid number of particle, using default number"
               << std::endl;
   }
-  Shader shader("shaders/part.frag", "shaders/part.vert");
   CLenv cl("shaders/kernel.cl");
 
   Camera camera(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f),
@@ -38,7 +36,7 @@ int main(int ac, char **av) {
     env.update();
     camera.update(env);
     scene.update(env);
-    scene.draw(env, shader);
+    scene.draw(env);
     glfwSwapBuffers(env.window);
     if (env.inputHandler.keys[GLFW_KEY_ESCAPE]) {
       glfwSetWindowShouldClose(env.window, GLFW_TRUE);

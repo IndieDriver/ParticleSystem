@@ -16,7 +16,7 @@ class Scene {
   glm::vec4 last_cursor_pos;
   Scene(CLenv *env, Camera *camera, unsigned int num_particle);
   ~Scene();
-  void draw(const Env &env, const Shader &shader);
+  void draw(const Env &env);
   void initScene(const Cglbuffer &buffer, const Env &env);
   void animate(const Cglbuffer &buffer, const Env &env);
   void emit(const Cglbuffer &buffer, const Env &env);
@@ -27,6 +27,8 @@ class Scene {
   void print_debug_info(const Env &env);
   CLenv *_cl;
   Camera *_camera;
+  Shader *_shader;
+  Shader *_billboard_shader;
   Cglbuffer _main_buffers;
   Renderer _renderer;
   std::unordered_map<float, Cglbuffer> _emit_buffers;
