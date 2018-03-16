@@ -10,7 +10,6 @@ enum class SceneState { Init, Running };
 
 class Scene {
  public:
-  GLuint vao;
   glm::vec4 last_cursor_pos;
   Scene(CLenv *env, Camera *camera, unsigned int num_particle);
   ~Scene();
@@ -23,6 +22,7 @@ class Scene {
  private:
   CLenv *_cl;
   Camera *_camera;
+  Cglbuffer _main_buffers;
   unsigned int _num_particle;
   enum ModelType _model;
   enum SceneState _state;

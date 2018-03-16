@@ -188,20 +188,21 @@ void mouseKeyCallback(GLFWwindow *window, int button, int action, int mods) {
   }
 }
 
-void CLenv::enqueueKernel(cl::Kernel k, cl_float4 cursorpos, int num_particle,
+void CLenv::enqueueKernel(cl::Kernel k, const Cglbuffer &buffers,
+                          cl_float4 cursorpos, int num_particle,
                           float deltaTime) {
   try {
     k.setArg(0, sizeof(cl_float), &deltaTime);
     k.setArg(1, sizeof(cl_float4), &cursorpos);
-    k.setArg(2, sizeof(cl_mem), &buf_pos);
-    k.setArg(3, sizeof(cl_mem), &buf_vel);
+    k.setArg(2, sizeof(cl_mem), &buffers.position);
+    k.setArg(3, sizeof(cl_mem), &buffers.velocity);
     cmds.enqueueNDRangeKernel(k, 0, cl::NDRange(num_particle));
   } catch (cl::Error e) {
     std::cout << std::endl << e.what() << " : Error " << e.err() << std::endl;
   }
 }
 
-CLenv::CLenv(std::string kernelFileName) : vbo_pos(0) {
+CLenv::CLenv(std::string kernelFileName) {
   try {
     std::vector<cl::Platform> all_platforms;
     cl::Platform::get(&all_platforms);
@@ -246,39 +247,36 @@ CLenv::CLenv(std::string kernelFileName) : vbo_pos(0) {
     if (loadProgram(kernelFileName, default_device)) {
       kinit = cl::Kernel(program, "clinit");
       kernel = cl::Kernel(program, "clpart");
+      kemit = cl::Kernel(program, "clemit");
     }
   } catch (cl::Error e) {
     std::cout << std::endl << e.what() << " : " << e.err() << std::endl;
   }
 }
 
-CLenv::~CLenv() {
-  if (vbo_pos != 0) {
-    glDeleteBuffers(1, &this->vbo_pos);
-  }
-}
-void CLenv::createBuffer(int num_particle) {
+CLenv::~CLenv() {}
+
+Cglbuffer CLenv::createGLBuffer(size_t size) {
+  Cglbuffer glbuf = {};
   try {
-    glGenBuffers(1, &vbo_pos);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_pos);
-    glBufferData(GL_ARRAY_BUFFER, 4 * num_particle * sizeof(float), NULL,
-                 GL_DYNAMIC_DRAW);
+    glGenBuffers(1, &glbuf.vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, glbuf.vbo);
+    glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     int status = 0;
 
-    buf_vel =
+    glbuf.velocity =
         cl::Buffer(this->context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
-                   4 * sizeof(float) * num_particle, NULL, &status);
-
+                   size, NULL, &status);
     if (status < 0) std::cout << status << "buffer error\n";
-    // status = cmds.enqueueWriteBuffer(buf_vel, CL_TRUE, 0, 4 * sizeof(float) *
-    // num_particle, NULL);
-    if (status < 0) std::cout << status << "enqueue error\n";
-    buf_pos = cl::BufferGL(this->context, CL_MEM_READ_WRITE, vbo_pos);
+    glbuf.position = cl::BufferGL(this->context, CL_MEM_READ_WRITE, glbuf.vbo);
   } catch (cl::Error e) {
     std::cout << std::endl << e.what() << " : Error " << e.err() << std::endl;
+    glbuf.vbo = 0;
+    return (glbuf);
   }
+  return (glbuf);
 }
 
 bool CLenv::loadProgram(std::string filename, cl::Device device) {

@@ -27,7 +27,6 @@ int main(int ac, char **av) {
   Shader shader("shaders/part.frag", "shaders/part.vert");
 
   CLenv cl("shaders/kernel.cl");
-  cl.createBuffer(particle_count);
 
   Camera camera(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f),
                 env.width, env.height);

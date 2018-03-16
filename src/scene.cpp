@@ -1,23 +1,29 @@
 #include "scene.hpp"
 
 Scene::Scene(CLenv *clenv, Camera *cam, unsigned int particle_nb)
-    : vao(0),
-      _cl(clenv),
+    : _cl(clenv),
       _camera(cam),
       _num_particle(particle_nb),
       _model(ModelType::Sphere) {
+  GLuint vao;
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
 
-  glBindBuffer(GL_ARRAY_BUFFER, _cl->vbo_pos);
+  _main_buffers = _cl->createGLBuffer(particle_nb * 4 * sizeof(float));
+  _main_buffers.vao = vao;
+
+  glBindBuffer(GL_ARRAY_BUFFER, _main_buffers.vbo);
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
   glEnableVertexAttribArray(0);
 }
 
 Scene::~Scene() {
-  if (this->vao != 0) {
-    glDeleteVertexArrays(1, &this->vao);
+  if (_main_buffers.vbo != 0) {
+    glDeleteBuffers(1, &_main_buffers.vbo);
+  }
+  if (_main_buffers.vao != 0) {
+    glDeleteVertexArrays(1, &_main_buffers.vao);
   }
 }
 
@@ -34,7 +40,7 @@ void Scene::draw(const Env &env, const Shader &shader) {
                glm::value_ptr(last_cursor_pos));
   glUniform1f(glGetUniformLocation(shader.id, "iTime"), env.getAbsoluteTime());
 
-  glBindVertexArray(vao);
+  glBindVertexArray(_main_buffers.vao);
   glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(_num_particle));
 }
 
@@ -58,10 +64,10 @@ void Scene::initScene(const Env &env) {
     glFinish();
     int status = 0;
     std::vector<cl::Memory> cl_vbos;
-    cl_vbos.push_back(_cl->buf_pos);
+    cl_vbos.push_back(_main_buffers.position);
     _cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
-    _cl->enqueueKernel(_cl->kinit, vec4_to_clfloat4(last_cursor_pos),
-                       _num_particle, 0.0f);
+    _cl->enqueueKernel(_cl->kinit, _main_buffers,
+                       vec4_to_clfloat4(last_cursor_pos), _num_particle, 0.0f);
     status = _cl->cmds.finish();
     if (status < 0) printf("Error clfinish\n");
     _cl->cmds.enqueueReleaseGLObjects(&cl_vbos, NULL, NULL);
@@ -81,10 +87,11 @@ void Scene::animate(const Env &env, float deltaTime) {
     glFinish();
     int status = 0;
     std::vector<cl::Memory> cl_vbos;
-    cl_vbos.push_back(_cl->buf_pos);
+    cl_vbos.push_back(_main_buffers.position);
     status = _cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
-    _cl->enqueueKernel(_cl->kernel, vec4_to_clfloat4(last_cursor_pos),
-                       _num_particle, deltaTime);
+    _cl->enqueueKernel(_cl->kernel, _main_buffers,
+                       vec4_to_clfloat4(last_cursor_pos), _num_particle,
+                       deltaTime);
     status = _cl->cmds.finish();
     if (status < 0) printf("Error clfinish\n");
     _cl->cmds.enqueueReleaseGLObjects(&cl_vbos, NULL, NULL);
