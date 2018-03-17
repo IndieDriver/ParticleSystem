@@ -55,10 +55,7 @@ void Scene::draw(const Env &env) {
   if (shader == nullptr) {
     return;
   }
-  GLint mvpID = glGetUniformLocation(shader->id, "MVP");
-  GLint cursorPosID = glGetUniformLocation(shader->id, "cursorPos");
-  glm::mat4 model(1.0f);
-  glm::mat4 MVP = _camera->proj * _camera->view * model;
+  glm::mat4 MVP = _camera->proj * _camera->view;
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   shader->use();
   glUniformMatrix4fv(glGetUniformLocation(shader->id, "MVP"), 1, GL_FALSE,
@@ -66,6 +63,7 @@ void Scene::draw(const Env &env) {
   glUniform3fv(glGetUniformLocation(shader->id, "cursorPos"), 1,
                glm::value_ptr(last_cursor_pos));
   glUniform1f(glGetUniformLocation(shader->id, "iTime"), env.getAbsoluteTime());
+
   if (_shader_type == ShaderType::Billboard && _billboard_texture != nullptr) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, _billboard_texture->id);
@@ -92,35 +90,17 @@ inline cl_float4 vec4_to_clfloat4(glm::vec4 glm_vec) {
   return (vec);
 }
 
-void Scene::initScene(const Cglbuffer &buffer, const Env &env) {
-  try {
-    if (tracking_cursor_pos) {
-      last_cursor_pos = getCursorPosInWorldSpace(env);
-    }
-    last_cursor_pos.w = static_cast<float>(_model);
-    _state = SceneState::Running;
-    glFlush();
-    glFinish();
-    int status = 0;
-    std::vector<cl::Memory> cl_vbos;
-    cl_vbos.push_back(buffer.position);
-    _cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
-    _cl->enqueueKernel(_cl->kinit, buffer, vec4_to_clfloat4(last_cursor_pos),
-                       buffer.size, 0.0f);
-    status = _cl->cmds.finish();
-    if (status < 0) printf("Error clfinish\n");
-    _cl->cmds.enqueueReleaseGLObjects(&cl_vbos, NULL, NULL);
-  } catch (cl::Error e) {
-    std::cout << std::endl << e.what() << " : Error " << e.err() << std::endl;
-  }
-}
 void Scene::invokeKernel(const cl::Kernel kernel, const Cglbuffer &buffer,
                          const Env &env) {
   if (tracking_cursor_pos) {
     last_cursor_pos = getCursorPosInWorldSpace(env);
   }
-
-  last_cursor_pos.w = gravity ? 0.0f : -1.0f;
+  if (_state == SceneState::Init) {
+    last_cursor_pos.w = static_cast<float>(_model);
+    _state = SceneState::Running;
+  } else {
+    last_cursor_pos.w = gravity ? 0.0f : -1.0f;
+  }
   try {
     glFlush();
     glFinish();
@@ -168,8 +148,41 @@ glm::vec4 Scene::getCursorPosInWorldSpace(const Env &env) {
   return (glm::vec4(0.0f));
 }
 
-void Scene::update(Env &env) {
-  _renderer.update(env);
+void Scene::updateBuffer(const Cglbuffer &buffer, const Env &env) {
+  switch (_state) {
+    case SceneState::Init:
+      invokeKernel(_cl->kinit, buffer, env);
+      break;
+    case SceneState::Running:
+      invokeKernel(_cl->kernel, buffer, env);
+      break;
+    case SceneState::Gravity:
+      invokeKernel(_cl->kgravity, buffer, env);
+      break;
+    default:
+      break;
+  }
+}
+
+void Scene::addEmitedParticles(unsigned int num_particle, const Env &env) {
+  Cglbuffer buffer;
+  GLuint vao;
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
+
+  buffer = _cl->createGLBuffer(num_particle * 4 * sizeof(float));
+  buffer.vao = vao;
+  buffer.size = num_particle;
+
+  glBindBuffer(GL_ARRAY_BUFFER, buffer.vbo);
+  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
+
+  glEnableVertexAttribArray(0);
+  _emit_buffers.emplace(env.getAbsoluteTime(), buffer);
+  invokeKernel(_cl->kemit, buffer, env);
+}
+
+void Scene::updateState(Env &env) {
   if (env.inputHandler.keys[GLFW_KEY_SPACE]) {
     env.inputHandler.keys[GLFW_KEY_SPACE] = false;
     gravity = !gravity;
@@ -179,24 +192,6 @@ void Scene::update(Env &env) {
     free_cam = !free_cam;
     env.setCursorLock(free_cam);
     tracking_cursor_pos = false;
-  }
-  if (env.inputHandler.keys[GLFW_KEY_E]) {
-    env.inputHandler.keys[GLFW_KEY_E] = false;
-    Cglbuffer buffer;
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    buffer = _cl->createGLBuffer(EMIT_PARTICLE * 4 * sizeof(float));
-    buffer.vao = vao;
-    buffer.size = EMIT_PARTICLE;
-
-    glBindBuffer(GL_ARRAY_BUFFER, buffer.vbo);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
-
-    glEnableVertexAttribArray(0);
-    _emit_buffers.emplace(env.getAbsoluteTime(), buffer);
-    invokeKernel(_cl->kemit, buffer, env);
   }
   if (env.inputHandler.keys[GLFW_KEY_1]) {
     env.inputHandler.keys[GLFW_KEY_1] = false;
@@ -239,6 +234,16 @@ void Scene::update(Env &env) {
         break;
     }
   }
+}
+
+void Scene::update(Env &env) {
+  _renderer.update(env);
+  updateState(env);
+  if (env.inputHandler.keys[GLFW_KEY_E]) {
+    env.inputHandler.keys[GLFW_KEY_E] = false;
+    addEmitedParticles(EMIT_PARTICLE, env);
+  }
+  // Erase particle who have exceeded their lifetime
   float current_time = env.getAbsoluteTime();
   for (auto it = _emit_buffers.begin(); it != _emit_buffers.end();) {
     if (current_time - it->first > 10.0f) {
@@ -247,40 +252,10 @@ void Scene::update(Env &env) {
       ++it;
     }
   }
-  switch (_state) {
-    case SceneState::Init:
-      initScene(_main_buffers, env);
-      break;
-    case SceneState::Running:
-      invokeKernel(_cl->kernel, _main_buffers, env);
-      break;
-    case SceneState::Gravity:
-      invokeKernel(_cl->kgravity, _main_buffers, env);
-      break;
-    default:
-      break;
-  }
+  updateBuffer(_main_buffers, env);
   for (const auto &buffer : _emit_buffers) {
-    switch (_state) {
-      case SceneState::Init:
-        initScene(buffer.second, env);
-        break;
-      case SceneState::Running:
-        invokeKernel(_cl->kernel, buffer.second, env);
-        break;
-      case SceneState::Gravity:
-        invokeKernel(_cl->kgravity, buffer.second, env);
-        break;
-      default:
-        break;
-    }
+    updateBuffer(buffer.second, env);
   }
-}
-
-std::string float_to_string(float f, int prec) {
-  std::ostringstream out;
-  out << std::setprecision(prec) << std::fixed << f;
-  return out.str();
 }
 
 void Scene::print_debug_info(const Env &env) {
@@ -290,19 +265,19 @@ void Scene::print_debug_info(const Env &env) {
   for (const auto &buffer : _emit_buffers) {
     particle_count += buffer.second.size;
   }
-  _renderer.renderText(10.0f, fheight - 25.0f, 0.35f,
+  _renderer.renderText(10.0f, fheight - 25.0f, 0.5f,
                        "x: " + float_to_string(_camera->pos.x, 2) +
                            " y: " + float_to_string(_camera->pos.y, 2) +
                            " z: " + float_to_string(_camera->pos.z, 2),
                        glm::vec3(1.0f, 1.0f, 1.0f));
   _renderer.renderText(
-      10.0f, fheight - 50.0f, 0.35f,
+      10.0f, fheight - 50.0f, 0.5f,
       "vel: " + float_to_string(_camera->velocity, 2) + " m/s ",
       glm::vec3(1.0f, 1.0f, 1.0f));
-  _renderer.renderText(10.0f, fheight - 75.0f, 0.35f,
+  _renderer.renderText(10.0f, fheight - 75.0f, 0.5f,
                        std::to_string(particle_count) + " particles",
                        glm::vec3(1.0f, 1.0f, 1.0f));
-  _renderer.renderText(fwidth - 130.0f, fheight - 25.0f, 0.35f,
+  _renderer.renderText(fwidth - 130.0f, fheight - 25.0f, 0.5f,
                        float_to_string(env.getFPS(), 2) + " fps",
                        glm::vec3(1.0f, 1.0f, 1.0f));
 }

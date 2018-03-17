@@ -19,16 +19,17 @@ class Scene {
   Scene(CLenv *env, Camera *camera, unsigned int num_particle);
   ~Scene();
   void draw(const Env &env);
-  void initScene(const Cglbuffer &buffer, const Env &env);
-
+  void updateBuffer(const Cglbuffer &buffer, const Env &env);
   void invokeKernel(const cl::Kernel kernel, const Cglbuffer &buffer,
                     const Env &env);
+  void addEmitedParticles(unsigned int num_particle, const Env &env);
 
   void update(Env &env);
   glm::vec4 getCursorPosInWorldSpace(const Env &env);
 
  private:
   void print_debug_info(const Env &env);
+  void updateState(Env &env);
   CLenv *_cl;
   Camera *_camera;
   Shader *_shader;
@@ -46,3 +47,9 @@ class Scene {
   bool tracking_cursor_pos = true;
   bool debug_mode = false;
 };
+
+static std::string float_to_string(float f, int prec) {
+  std::ostringstream out;
+  out << std::setprecision(prec) << std::fixed << f;
+  return out.str();
+}
