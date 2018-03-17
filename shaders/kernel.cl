@@ -49,6 +49,27 @@ __kernel void clpart(float deltaTime, float4 cursor, __global float4 *lpos, __gl
   lvel[global_id] = vel;
 }
 
+__kernel void clgravity(float deltaTime, float4 cursor, __global float4 *lpos, __global float4 *lvel) {
+  int global_id = get_global_id(0);
+  float4 pos = lpos[global_id];
+  float4 vel = lvel[global_id];
+
+  if (cursor.w != -1.0f) {
+    float4 old_pos = pos;
+    pos.w = 0.0f;
+    float4 force = normalize(cursor - pos);
+    vel += force * deltaTime;
+    vel.x = 0.0f;
+    vel.z = 0.0f;
+    pos += vel;
+    vel *= 0.95f;
+    pos.x = old_pos.x;
+    pos.z = old_pos.z;
+  }
+  lpos[global_id] = pos;
+  lvel[global_id] = vel;
+}
+
 __kernel void clemit(float deltaTime, float4 cursor, __global float4 *lpos, __global float4 *lvel) {
   int global_id = get_global_id(0);
   unsigned int seed = (unsigned int)global_id;

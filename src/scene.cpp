@@ -114,8 +114,8 @@ void Scene::initScene(const Cglbuffer &buffer, const Env &env) {
     std::cout << std::endl << e.what() << " : Error " << e.err() << std::endl;
   }
 }
-
-void Scene::animate(const Cglbuffer &buffer, const Env &env) {
+void Scene::invokeKernel(const cl::Kernel kernel, const Cglbuffer &buffer,
+                         const Env &env) {
   if (tracking_cursor_pos) {
     last_cursor_pos = getCursorPosInWorldSpace(env);
   }
@@ -128,30 +128,7 @@ void Scene::animate(const Cglbuffer &buffer, const Env &env) {
     std::vector<cl::Memory> cl_vbos;
     cl_vbos.push_back(buffer.position);
     status = _cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
-    _cl->enqueueKernel(_cl->kernel, buffer, vec4_to_clfloat4(last_cursor_pos),
-                       buffer.size, env.getDeltaTime());
-    status = _cl->cmds.finish();
-    if (status < 0) printf("Error clfinish\n");
-    _cl->cmds.enqueueReleaseGLObjects(&cl_vbos, NULL, NULL);
-  } catch (cl::Error e) {
-    std::cout << std::endl << e.what() << " : Error " << e.err() << std::endl;
-  }
-}
-
-void Scene::emit(const Cglbuffer &buffer, const Env &env) {
-  if (tracking_cursor_pos) {
-    last_cursor_pos = getCursorPosInWorldSpace(env);
-  }
-
-  last_cursor_pos.w = gravity ? 0.0f : -1.0f;
-  try {
-    glFlush();
-    glFinish();
-    int status = 0;
-    std::vector<cl::Memory> cl_vbos;
-    cl_vbos.push_back(buffer.position);
-    status = _cl->cmds.enqueueAcquireGLObjects(&cl_vbos, NULL, NULL);
-    _cl->enqueueKernel(_cl->kemit, buffer, vec4_to_clfloat4(last_cursor_pos),
+    _cl->enqueueKernel(kernel, buffer, vec4_to_clfloat4(last_cursor_pos),
                        buffer.size, env.getDeltaTime());
     status = _cl->cmds.finish();
     if (status < 0) printf("Error clfinish\n");
@@ -219,7 +196,7 @@ void Scene::update(Env &env) {
 
     glEnableVertexAttribArray(0);
     _emit_buffers.emplace(env.getAbsoluteTime(), buffer);
-    emit(buffer, env);
+    invokeKernel(_cl->kemit, buffer, env);
   }
   if (env.inputHandler.keys[GLFW_KEY_1]) {
     env.inputHandler.keys[GLFW_KEY_1] = false;
@@ -232,6 +209,14 @@ void Scene::update(Env &env) {
     _model = ModelType::Cube;
     gravity = false;
     _state = SceneState::Init;
+  }
+  if (env.inputHandler.keys[GLFW_KEY_Z]) {
+    env.inputHandler.keys[GLFW_KEY_Z] = false;
+    if (_state == SceneState::Running) {
+      _state = SceneState::Gravity;
+    } else {
+      _state = SceneState::Running;
+    }
   }
   if (env.inputHandler.keys[GLFW_KEY_G]) {
     env.inputHandler.keys[GLFW_KEY_G] = false;
@@ -262,13 +247,33 @@ void Scene::update(Env &env) {
       ++it;
     }
   }
-  if (_state == SceneState::Init) {
-    initScene(_main_buffers, env);
-  } else {
-    animate(_main_buffers, env);
+  switch (_state) {
+    case SceneState::Init:
+      initScene(_main_buffers, env);
+      break;
+    case SceneState::Running:
+      invokeKernel(_cl->kernel, _main_buffers, env);
+      break;
+    case SceneState::Gravity:
+      invokeKernel(_cl->kgravity, _main_buffers, env);
+      break;
+    default:
+      break;
   }
   for (const auto &buffer : _emit_buffers) {
-    animate(buffer.second, env);
+    switch (_state) {
+      case SceneState::Init:
+        initScene(buffer.second, env);
+        break;
+      case SceneState::Running:
+        invokeKernel(_cl->kernel, buffer.second, env);
+        break;
+      case SceneState::Gravity:
+        invokeKernel(_cl->kgravity, buffer.second, env);
+        break;
+      default:
+        break;
+    }
   }
 }
 

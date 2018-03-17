@@ -41,8 +41,8 @@ int main(int ac, char **av) {
     if (env.inputHandler.keys[GLFW_KEY_ESCAPE]) {
       glfwSetWindowShouldClose(env.window, GLFW_TRUE);
     }
-    if (env.inputHandler.keys[GLFW_KEY_Y]) {
-      env.inputHandler.keys[GLFW_KEY_Y] = false;
+    if (env.inputHandler.keys[GLFW_KEY_R]) {
+      env.inputHandler.keys[GLFW_KEY_R] = false;
       env.toggleFullscreen();
     }
   }

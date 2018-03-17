@@ -82,6 +82,7 @@ class CLenv {
   cl::Kernel kinit;
   cl::Kernel kernel;
   cl::Kernel kemit;
+  cl::Kernel kgravity;
 
   bool loadProgram(std::string filename, cl::Device device);
 };

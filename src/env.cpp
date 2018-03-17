@@ -248,6 +248,7 @@ CLenv::CLenv(std::string kernelFileName) {
       kinit = cl::Kernel(program, "clinit");
       kernel = cl::Kernel(program, "clpart");
       kemit = cl::Kernel(program, "clemit");
+      kgravity = cl::Kernel(program, "clgravity");
     }
   } catch (cl::Error e) {
     std::cout << std::endl << e.what() << " : " << e.err() << std::endl;

@@ -9,7 +9,7 @@
 
 enum class ModelType { Sphere, Cube };
 
-enum class SceneState { Init, Running };
+enum class SceneState { Init, Running, Gravity };
 
 enum class ShaderType { Normal, Billboard };
 
@@ -20,8 +20,10 @@ class Scene {
   ~Scene();
   void draw(const Env &env);
   void initScene(const Cglbuffer &buffer, const Env &env);
-  void animate(const Cglbuffer &buffer, const Env &env);
-  void emit(const Cglbuffer &buffer, const Env &env);
+
+  void invokeKernel(const cl::Kernel kernel, const Cglbuffer &buffer,
+                    const Env &env);
+
   void update(Env &env);
   glm::vec4 getCursorPosInWorldSpace(const Env &env);
 
