@@ -76,6 +76,8 @@ class Renderer {
                    const std::vector<std::string>& textures);
   void clearScreen();
   void switchPolygonMode(enum PolygonMode mode);
+  void setDepthtest(bool val);
+  void setBlend(bool val);
   Uniforms uniforms;
 
  private:
@@ -84,6 +86,8 @@ class Renderer {
   enum PolygonMode _polygonMode;
   TextRenderer _textRenderer;
   UiRenderer _uiRenderer;
+  bool _depthTest = false;
+  bool _blend = true;
   void switchShader(GLuint shader_id, int& current_shader_id);
 };
 

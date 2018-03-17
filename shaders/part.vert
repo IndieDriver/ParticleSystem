@@ -7,6 +7,6 @@ out VertexData {
 } vs_data;
 
 void main () {
-	vs_data.pos = vertex_position.xyz;
-	gl_Position = MVP * vec4(vertex_position.xyz, 1.0);
+  vs_data.pos = vertex_position.xyz;
+  gl_Position = MVP * vec4(vertex_position.xyz, 1.0);
 }

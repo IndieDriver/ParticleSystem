@@ -24,7 +24,10 @@ std::vector<glm::vec4> billboardVertices = {  // xy=pos, zw = uv
 Renderer::Renderer(void) : Renderer(0, 0) {}
 
 Renderer::Renderer(int width, int height)
-    : _width(width), _height(height), _polygonMode(PolygonMode::Fill) {}
+    : _width(width), _height(height), _polygonMode(PolygonMode::Fill) {
+  setDepthtest(_depthTest);
+  setBlend(_blend);
+}
 
 Renderer::Renderer(Renderer const &src) { *this = src; }
 
@@ -39,21 +42,41 @@ Renderer &Renderer::operator=(Renderer const &rhs) {
 void Renderer::renderText(float pos_x, float pos_y, float scale,
                           std::string text, glm::vec3 color) {
   enum PolygonMode backup_mode = _polygonMode;
+  bool old_depthtest = _depthTest;
+  bool old_blend = _blend;
+
   switchPolygonMode(PolygonMode::Fill);
+  setDepthtest(false);
+  setBlend(true);
+
   glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(this->_width),
                                     0.0f, static_cast<float>(this->_height));
   _textRenderer.renderText(pos_x, pos_y, scale, text, color, projection);
+
+  // Restore saved state
   switchPolygonMode(backup_mode);
+  setDepthtest(old_depthtest);
+  setBlend(old_blend);
 }
 
 void Renderer::renderUI(std::string filename, float pos_x, float pos_y,
                         float scale, bool centered) {
   enum PolygonMode backup_mode = _polygonMode;
+  bool old_depthtest = _depthTest;
+  bool old_blend = _blend;
+
   switchPolygonMode(PolygonMode::Fill);
+  setDepthtest(false);
+  setBlend(true);
+
   glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(this->_width),
                                     0.0f, static_cast<float>(this->_height));
   _uiRenderer.renderUI(filename, pos_x, pos_y, scale, projection, centered);
+
+  // Restore saved state
   switchPolygonMode(backup_mode);
+  setDepthtest(old_depthtest);
+  setBlend(old_blend);
 }
 
 void Renderer::switchShader(GLuint shader_id, int &current_shader_id) {
@@ -98,6 +121,28 @@ void Renderer::switchPolygonMode(enum PolygonMode mode) {
         break;
     }
     _polygonMode = mode;
+  }
+}
+
+void Renderer::setDepthtest(bool val) {
+  if (_depthTest != val) {
+    if (val) {
+      glEnable(GL_DEPTH_TEST);
+    } else {
+      glDisable(GL_DEPTH_TEST);
+    }
+    _depthTest = val;
+  }
+}
+
+void Renderer::setBlend(bool val) {
+  if (_blend != val) {
+    if (val) {
+      glEnable(GL_BLEND);
+    } else {
+      glDisable(GL_BLEND);
+    }
+    _blend = val;
   }
 }
 
@@ -181,14 +226,12 @@ TextRenderer::~TextRenderer() {
 void TextRenderer::renderText(float pos_x, float pos_y, float scale,
                               std::string text, glm::vec3 color,
                               glm::mat4 ortho) {
-  glDisable(GL_DEPTH_TEST);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glUseProgram(_shader_id);
   glUniformMatrix4fv(glGetUniformLocation(_shader_id, "proj"), 1, GL_FALSE,
                      glm::value_ptr(ortho));
   glUniform3fv(glGetUniformLocation(_shader_id, "text_color"), 1,
                glm::value_ptr(color));
+
   glActiveTexture(GL_TEXTURE0);
   glBindVertexArray(this->_vao);
   for (char &c : text) {
@@ -214,9 +257,7 @@ void TextRenderer::renderText(float pos_x, float pos_y, float scale,
     }
   }
   glBindVertexArray(0);
-  glEnable(GL_DEPTH_TEST);
   glBindTexture(GL_TEXTURE_2D, 0);
-  glDisable(GL_BLEND);
 }
 
 UiRenderer::UiRenderer(void) {
@@ -268,9 +309,6 @@ void UiRenderer::renderUI(std::string texture_name, float pos_x, float pos_y,
     texture = it->second;
   }
   if (texture == nullptr) return;
-  glDisable(GL_DEPTH_TEST);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glUseProgram(_shader_id);
   glUniformMatrix4fv(glGetUniformLocation(_shader_id, "proj"), 1, GL_FALSE,
                      glm::value_ptr(ortho));
@@ -301,7 +339,5 @@ void UiRenderer::renderUI(std::string texture_name, float pos_x, float pos_y,
   glDrawArrays(GL_TRIANGLES, 0, 6);
 
   glBindVertexArray(0);
-  glEnable(GL_DEPTH_TEST);
   glBindTexture(GL_TEXTURE_2D, 0);
-  glDisable(GL_BLEND);
 }
