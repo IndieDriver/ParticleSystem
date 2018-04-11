@@ -1,9 +1,17 @@
 # Particle System
 
-### Usage
+<img src="screenshots/points.png" width="600">
+
+Intro
+-----
+Particle system exploiting OpenGL and OpenCL interoperability.  
+Vertices data are generated and/or animated by OpenCL every frame. OpenGL take up the relay with shading (and emiting vertices in [billboard mode](https://raw.githubusercontent.com/indiedriver/ParticleSystem/master/screenshots/billboards.png))
+
+Usage
+-----
 `./ParticleSystem [particle_count]`
 
-#### Keymap:  
+### Keymap:  
 **WASD**  - move around  
 **SPACE** - toggle gravity  
 **G**     - lock gravity at cursor position  
@@ -16,12 +24,10 @@
 **2**     - cube init  
 
 
-### build
+Build
+-----
 ```
 git clone --recursive https://github.com/indiedriver/ParticleSystem
 cd ParticleSystem
 cmake .
 ```
-
-<img src="screenshots/points.png" width="700">
-<img src="screenshots/billboards.png" width="700">
